@@ -675,7 +675,7 @@ async function hashPwd(pwd) {
 async function gasPost(payload) {
   const resp = await fetch(GAS_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "text/plain" },
     body: JSON.stringify(payload)
   });
   if (!resp.ok) throw new Error("Error HTTP " + resp.status);
