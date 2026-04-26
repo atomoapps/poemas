@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0d0b14">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Poemenizador">
+  <link rel="manifest" id="pwa-manifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <title>Poemenizador Da Vinci</title>
+
+  <style>
+    /* ═══════════════════════════════════════════
+       VARIABLES Y RESET
+    ═══════════════════════════════════════════ */
+    :root {
+      --bg:          #0d0b14;
+      --bg-2:        #13101e;
+      --surface:     #1a1628;
+      --surface-2:   #221d32;
+      --border:      rgba(200,185,230,0.10);
+      --accent:      #d4a574;    /* oro viejo */
+      --accent-2:    #c4a0c0;    /* malva */
+      --accent-glow: rgba(212,165,116,0.18);
+      --text:        #ede7dc;
+      --text-2:      #a89dba;
+      --muted:       #5e5673;
+      --danger:      #e07070;
+      --success:     #7ec8a0;
+      --radius:      14px;
+      --radius-lg:   20px;
+      --shadow:      0 8px 40px rgba(0,0,0,0.6);
+      --trans:        all 0.28s cubic-bezier(0.34,1.2,0.64,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    /* ═══════════════════════════════════════════
+       PANTALLAS
+    ═══════════════════════════════════════════ */
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      transition: opacity 0.38s ease, transform 0.38s ease;
+      will-change: transform, opacity;
+    }
+    .screen.hidden  { opacity: 0; pointer-events: none; transform: translateY(14px); }
+    .screen.slide-out { opacity: 0; transform: translateX(-22px); }
+
+    /* ═══════════════════════════════════════════
+       PANTALLA LOGIN
+    ═══════════════════════════════════════════ */
+    #screen-login {
+      justify-content: center;
+      align-items: center;
+      background:
+        radial-gradient(ellipse 70% 55% at 50% 120%, rgba(180,120,200,0.14) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% -10%,  rgba(212,165,116,0.10) 0%, transparent 60%),
+        var(--bg);
+      padding: 24px;
+    }
+
+    /* partículas decorativas */
+    #screen-login::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(212,165,116,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 75% 20%, rgba(196,160,192,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 80%, rgba(212,165,116,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 10% 70%, rgba(196,160,192,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 60%, rgba(212,165,116,0.4) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 360px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 42px 36px 36px;
+      box-shadow: var(--shadow), 0 0 60px rgba(180,120,200,0.08);
+      animation: cardIn 0.6s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(28px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0)    scale(1); }
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .login-logo .logo-icon {
+      font-size: 2.6rem;
+      margin-bottom: 10px;
+      display: block;
+      filter: drop-shadow(0 0 12px rgba(212,165,116,0.4));
+    }
+    .login-logo h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.65rem;
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: 0.02em;
+    }
+    .login-logo p {
+      font-size: 0.78rem;
+      color: var(--text-2);
+      margin-top: 4px;
+      font-style: italic;
+      font-family: 'Cormorant Garamond', serif;
+      letter-spacing: 0.04em;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+    .field label {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--text-2);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .field input {
+      width: 100%;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 16px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 300;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus {
+      border-color: rgba(212,165,116,0.5);
+      box-shadow: 0 0 0 3px rgba(212,165,116,0.1);
+    }
+    .field input::placeholder { color: var(--muted); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #c49255, #d4a574);
+      border: none;
+      border-radius: 10px;
+      color: #1a1010;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: var(--trans);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover::after  { opacity: 1; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .login-error {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: rgba(224,112,112,0.12);
+      border: 1px solid rgba(224,112,112,0.3);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: var(--danger);
+      display: none;
+    }
+    .login-error.visible { display: block; }
+
+    .login-spinner {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--text-2);
+      margin-top: 14px;
+    }
+    .login-spinner.visible { display: flex; }
+
+    /* ═══════════════════════════════════════════
+       PANTALLA GALERÍA
+    ═══════════════════════════════════════════ */
+    #screen-galeria {
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    /* Header */
+    .gallery-header {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .gallery-header-left { display: flex; align-items: center; gap: 10px; }
+    .gallery-logo-small {
+      font-size: 1.5rem;
+      filter: drop-shadow(0 0 8px rgba(212,165,116,0.4));
+    }
+    .gallery-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: var(--text);
+    }
+    .gallery-subtitle {
+      font-size: 0.73rem;
+      color: var(--text-2);
+      font-style: italic;
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    .btn-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-2);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--trans);
+      flex-shrink: 0;
+    }
+    .btn-icon:hover { background: var(--surface-2); color: var(--text); }
+    .btn-icon:active { transform: scale(0.92); }
+
+    /* Barra de nombre de usuario */
+    .gallery-user-bar {
+      flex-shrink: 0;
+      padding: 10px 20px;
+      background: linear-gradient(90deg, rgba(212,165,116,0.08), transparent);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    /* Contenedor de poemas */
+    .gallery-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 20px 16px 32px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Pull to refresh hint */
+    .ptr-hint {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+      padding: 6px 0 16px;
+      font-style: italic;
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    /* Estado vacío */
+    .gallery-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .gallery-empty .empty-icon { font-size: 3rem; opacity: 0.5; }
+    .gallery-empty p { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-style: italic; }
+
+    /* Grid de poemas */
+    .poems-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    @media (min-width: 500px) { .poems-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 700px) { .poems-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    /* Tarjeta de poema */
+    .poem-card {
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: var(--trans);
+      animation: cardSlideIn 0.4s ease both;
+      position: relative;
+    }
+    .poem-card:active { transform: scale(0.96); }
+    .poem-card:hover  { border-color: rgba(212,165,116,0.3); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+
+    @keyframes cardSlideIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .poem-thumb {
+      width: 100%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      display: block;
+      background: var(--bg-2);
+    }
+
+    /* placeholder cuando no hay miniatura */
+    .poem-thumb-placeholder {
+      width: 100%;
+      aspect-ratio: 3/4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      background: linear-gradient(160deg, var(--surface-2) 0%, var(--bg-2) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .poem-thumb-placeholder::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 18px,
+        rgba(200,185,230,0.03) 18px,
+        rgba(200,185,230,0.03) 19px
+      );
+    }
+    .poem-thumb-placeholder .placeholder-icon {
+      font-size: 2.2rem;
+      opacity: 0.35;
+      z-index: 1;
+    }
+
+    .poem-info {
+      padding: 10px 12px 12px;
+    }
+    .poem-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.92rem;
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1.35;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .poem-date {
+      font-size: 0.68rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* Badge "nuevo" — aparece si el poema es reciente */
+    .poem-badge-new {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--accent);
+      color: #1a1010;
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      padding: 2px 7px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    /* Spinner genérico */
+    .spinner {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Loading overlay */
+    .loading-overlay {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 60px 20px;
+      color: var(--text-2);
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+    }
+
+    /* ═══════════════════════════════════════════
+       TOAST
+    ═══════════════════════════════════════════ */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 10px 22px;
+      font-size: 0.82rem;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      z-index: 9999;
+      transition: transform 0.32s cubic-bezier(0.34,1.3,0.64,1), opacity 0.32s;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+    }
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ═══════════════════════════════════════════
+       MENÚ LOGOUT (bottom sheet)
+    ═══════════════════════════════════════════ */
+    .bottom-sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 800;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s;
+      backdrop-filter: blur(3px);
+    }
+    .bottom-sheet-overlay.open { opacity: 1; pointer-events: all; }
+
+    .bottom-sheet {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      border-top: 1px solid var(--border);
+      padding: 16px 0 calc(env(safe-area-inset-bottom) + 16px);
+      z-index: 801;
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.34,1.1,0.64,1);
+    }
+    .bottom-sheet-overlay.open .bottom-sheet { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 38px;
+      height: 4px;
+      background: var(--muted);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+      opacity: 0.4;
+    }
+    .sheet-user-info {
+      padding: 0 24px 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .sheet-user-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      font-weight: 400;
+      color: var(--text);
+    }
+    .sheet-user-login {
+      font-size: 0.78rem;
+      color: var(--text-2);
+    }
+    .sheet-btn {
+      width: 100%;
+      padding: 15px 24px;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.18s;
+    }
+    .sheet-btn:hover  { background: rgba(255,255,255,0.04); }
+    .sheet-btn:active { background: rgba(255,255,255,0.08); }
+    .sheet-btn.danger { color: var(--danger); }
+    .sheet-btn .sheet-btn-icon { font-size: 1.1rem; width: 24px; text-align: center; }
+
+    /* ═══════════════════════════════════════════
+       SCROLLBAR
+    ═══════════════════════════════════════════ */
+    .gallery-body::-webkit-scrollbar { width: 4px; }
+    .gallery-body::-webkit-scrollbar-track { background: transparent; }
+    .gallery-body::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     PANTALLA: LOGIN
+══════════════════════════════════════════════ -->
+<section id="screen-login" class="screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="logo-icon">🕊️</span>
+      <h1>Poemenizador</h1>
+      <p>Da Vinci — tu galería privada</p>
+    </div>
+
+    <div class="field">
+      <label for="inp-usuario">Usuario</label>
+      <input id="inp-usuario" type="text" autocomplete="username"
+             placeholder="tu.usuario" autocapitalize="none" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="inp-pwd">Contraseña</label>
+      <input id="inp-pwd" type="password" autocomplete="current-password"
+             placeholder="••••••••">
+    </div>
+
+    <button id="btn-login" class="btn-primary" onclick="App.login()">Entrar</button>
+
+    <div id="login-error"  class="login-error"></div>
+    <div id="login-spinner" class="login-spinner">
+      <span class="spinner"></span> Verificando…
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     PANTALLA: GALERÍA
+══════════════════════════════════════════════ -->
+<section id="screen-galeria" class="screen hidden">
+
+  <!-- Header -->
+  <header class="gallery-header">
+    <div class="gallery-header-left">
+      <span class="gallery-logo-small">🕊️</span>
+      <div>
+        <div class="gallery-title">Mis poemas</div>
+        <div class="gallery-subtitle" id="gallery-subtitle">cargando…</div>
+      </div>
+    </div>
+    <button class="btn-icon" onclick="App.abrirMenu()" title="Menú">
+      <span id="gallery-user-initial">?</span>
+    </button>
+  </header>
+
+  <!-- Barra de usuario -->
+  <div class="gallery-user-bar" id="gallery-user-bar">
+    <span>✨</span>
+    <span id="gallery-welcome">Bienvenida</span>
+  </div>
+
+  <!-- Cuerpo scrollable -->
+  <div class="gallery-body" id="gallery-body">
+    <div class="loading-overlay" id="gallery-loading">
+      <span class="spinner"></span>
+      <span>Cargando tus poemas…</span>
+    </div>
+    <div id="gallery-content" style="display:none">
+      <p class="ptr-hint">↑ Desliza hacia abajo para actualizar</p>
+      <div class="poems-grid" id="poems-grid"></div>
+    </div>
+    <div class="gallery-empty hidden" id="gallery-empty">
+      <div class="empty-icon">📜</div>
+      <p>Todavía no hay poemas en tu galería.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     MENÚ (bottom sheet)
+══════════════════════════════════════════════ -->
+<div class="bottom-sheet-overlay" id="sheet-overlay" onclick="App.cerrarMenu()">
+  <div class="bottom-sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-user-info">
+      <div class="sheet-user-name" id="sheet-nombre">—</div>
+      <div class="sheet-user-login" id="sheet-usuario">—</div>
+    </div>
+    <button class="sheet-btn" onclick="App.refrescar(); App.cerrarMenu();">
+      <span class="sheet-btn-icon">🔄</span> Actualizar galería
+    </button>
+    <button class="sheet-btn danger" onclick="App.logout()">
+      <span class="sheet-btn-icon">🚪</span> Cerrar sesión
+    </button>
+  </div>
+</div>
+
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+<script>
+"use strict";
+
+// ─── CONFIGURACIÓN ──────────────────────────────────────────────────
+// 👉 CAMBIA ESTA URL por la de tu despliegue de GAS v6.0
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxioO4vYIQYXFqTcoBdkwihcQVnYWqrjsDgCrCHXSVe9rK0Qgn91TSQa9u8m5S-DsLA/exec";
+
+// ─── HASH SHA-256 (igual al que usa el HTML del sobre) ──────────────
+async function hashPwd(pwd) {
+  const enc = new TextEncoder().encode(pwd);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+// ─── LLAMADA AL GAS ─────────────────────────────────────────────────
+async function gasPost(payload) {
+  const resp = await fetch(GAS_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  if (!resp.ok) throw new Error("Error HTTP " + resp.status);
+  return resp.json();
+}
+
+// ─── UTILIDADES ─────────────────────────────────────────────────────
+function el(id)          { return document.getElementById(id); }
+function show(id)        { el(id).classList.remove("hidden"); }
+function hide(id)        { el(id).classList.add("hidden"); }
+function showScreen(id)  {
+  document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
+  el(id).classList.remove("hidden");
+}
+
+let _toastTimer;
+function toast(msg, dur = 2800) {
+  const t = el("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove("show"), dur);
+}
+
+function formatearFecha(str) {
+  if (!str) return "";
+  // Formato colombiano dd/mm/aaaa hh:mm:ss → extraer solo la fecha
+  const match = str.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (!match) return str;
+  const meses = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  return `${parseInt(match[1])} ${meses[parseInt(match[2])-1]} ${match[3]}`;
+}
+
+function esReciente(fechaStr, diasMax = 7) {
+  if (!fechaStr) return false;
+  const match = fechaStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (!match) return false;
+  const fecha = new Date(parseInt(match[3]), parseInt(match[2])-1, parseInt(match[1]));
+  return (Date.now() - fecha.getTime()) < diasMax * 86_400_000;
+}
+
+// ─── ESTADO DE LA APP ───────────────────────────────────────────────
+const State = {
+  token    : localStorage.getItem("pwa_token")    || "",
+  sesionId : localStorage.getItem("pwa_sesion_id")|| "",
+  nombre   : localStorage.getItem("pwa_nombre")   || "",
+  usuario  : localStorage.getItem("pwa_usuario")  || "",
+
+  guardar() {
+    localStorage.setItem("pwa_token",     this.token);
+    localStorage.setItem("pwa_sesion_id", this.sesionId);
+    localStorage.setItem("pwa_nombre",    this.nombre);
+    localStorage.setItem("pwa_usuario",   this.usuario);
+  },
+  limpiar() {
+    ["pwa_token","pwa_sesion_id","pwa_nombre","pwa_usuario"]
+      .forEach(k => localStorage.removeItem(k));
+    this.token = this.sesionId = this.nombre = this.usuario = "";
+  }
+};
+
+// ─── APP ─────────────────────────────────────────────────────────────
+const App = {
+
+  async init() {
+    // Registrar SW si es posible
+    if ("serviceWorker" in navigator) {
+      try {
+        await navigator.serviceWorker.register("sw.js");
+      } catch(_) { /* no bloqueante */ }
+    }
+
+    // Inyectar manifest dinámicamente
+    _inyectarManifest();
+
+    // Enter en campos
+    el("inp-pwd").addEventListener("keydown", e => {
+      if (e.key === "Enter") this.login();
+    });
+    el("inp-usuario").addEventListener("keydown", e => {
+      if (e.key === "Enter") el("inp-pwd").focus();
+    });
+
+    // Auto-login si hay token guardado
+    if (State.token && State.sesionId) {
+      await this.validarSesion();
+    } else {
+      showScreen("screen-login");
+    }
+  },
+
+  async validarSesion() {
+    try {
+      const res = await gasPost({ action: "pwa_validar_token", token: State.token });
+      if (res.valido) {
+        // Actualizar sesion_id por si cambió
+        if (res.sesion_id) { State.sesionId = res.sesion_id; State.guardar(); }
+        this.mostrarGaleria();
+      } else {
+        State.limpiar();
+        showScreen("screen-login");
+      }
+    } catch(_) {
+      // Sin red — ir a galería si hay token (modo offline)
+      if (State.token) { this.mostrarGaleria(); }
+      else             { showScreen("screen-login"); }
+    }
+  },
+
+  async login() {
+    const usuario = el("inp-usuario").value.trim();
+    const pwd     = el("inp-pwd").value;
+
+    if (!usuario || !pwd) { this.mostrarError("Introduce tu usuario y contraseña."); return; }
+
+    el("btn-login").disabled  = true;
+    el("login-error").classList.remove("visible");
+    el("login-spinner").classList.add("visible");
+
+    try {
+      const pwdHash = await hashPwd(pwd);
+      const res = await gasPost({ action: "pwa_login", usuario, pwd_hash: pwdHash });
+
+      if (res.ok) {
+        State.token    = res.token;
+        State.sesionId = res.sesion_id;
+        State.nombre   = res.nombre;
+        State.usuario  = usuario;
+        State.guardar();
+        this.mostrarGaleria();
+      } else {
+        this.mostrarError(_mensajeError(res.error));
+      }
+    } catch(e) {
+      this.mostrarError("No se pudo conectar. Comprueba tu conexión.");
+    } finally {
+      el("btn-login").disabled = false;
+      el("login-spinner").classList.remove("visible");
+    }
+  },
+
+  mostrarError(msg) {
+    const err = el("login-error");
+    err.textContent = msg;
+    err.classList.add("visible");
+  },
+
+  mostrarGaleria() {
+    el("gallery-welcome").textContent = "Hola, " + (State.nombre || State.usuario) + " 💛";
+    el("gallery-subtitle").textContent = "tu galería privada";
+    el("gallery-user-initial").textContent =
+      (State.nombre || State.usuario).charAt(0).toUpperCase();
+    el("sheet-nombre").textContent  = State.nombre  || State.usuario;
+    el("sheet-usuario").textContent = "@" + State.usuario;
+
+    showScreen("screen-galeria");
+    this.cargarPoemas();
+  },
+
+  async cargarPoemas() {
+    show("gallery-loading");
+    hide("gallery-content");
+    hide("gallery-empty");
+
+    try {
+      const res = await gasPost({
+        action    : "pwa_listar_poemas",
+        sesion_id : State.sesionId,
+        pwa_token : State.token
+      });
+
+      hide("gallery-loading");
+
+      if (!res.ok || !res.poemas) { toast("Error al cargar poemas."); return; }
+
+      if (res.poemas.length === 0) {
+        show("gallery-empty");
+      } else {
+        this.renderPoemas(res.poemas);
+        show("gallery-content");
+      }
+
+      el("gallery-subtitle").textContent =
+        res.poemas.length + (res.poemas.length === 1 ? " poema" : " poemas");
+
+    } catch(e) {
+      hide("gallery-loading");
+      toast("Sin conexión — mostrando caché.");
+      // Podría mostrarse caché del SW aquí
+    }
+  },
+
+  renderPoemas(poemas) {
+    const grid = el("poems-grid");
+    grid.innerHTML = "";
+
+    poemas.forEach((p, i) => {
+      const card = document.createElement("div");
+      card.className = "poem-card";
+      card.style.animationDelay = (i * 55) + "ms";
+      card.onclick = () => this.abrirPoema(p);
+
+      const nuevo = esReciente(p.creado_en);
+
+      card.innerHTML = `
+        ${nuevo ? '<span class="poem-badge-new">nuevo</span>' : ""}
+        ${this.renderThumb(p)}
+        <div class="poem-info">
+          <div class="poem-title">${_esc(p.titulo)}</div>
+          <div class="poem-date">${formatearFecha(p.creado_en)}</div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  },
+
+  renderThumb(p) {
+    if (p.miniatura) {
+      const src = p.miniatura.startsWith("data:") ? p.miniatura
+                : "data:image/jpeg;base64," + p.miniatura;
+      return `<img class="poem-thumb" src="${src}" alt="${_esc(p.titulo)}"
+               onerror="this.parentElement.replaceChild(_placeholderThumb(), this)">`;
+    }
+    return _placeholderThumbHTML();
+  },
+
+  abrirPoema(p) {
+    if (!p.url_html) { toast("Este poema no tiene URL disponible."); return; }
+    window.open(p.url_html, "_blank", "noopener,noreferrer");
+  },
+
+  refrescar() {
+    toast("Actualizando…");
+    this.cargarPoemas();
+  },
+
+  abrirMenu() {
+    el("sheet-overlay").classList.add("open");
+  },
+  cerrarMenu() {
+    el("sheet-overlay").classList.remove("open");
+  },
+
+  logout() {
+    this.cerrarMenu();
+    State.limpiar();
+    showScreen("screen-login");
+    el("inp-usuario").value = "";
+    el("inp-pwd").value = "";
+    el("login-error").classList.remove("visible");
+    toast("Sesión cerrada.");
+  }
+};
+
+// ─── HELPERS ─────────────────────────────────────────────────────────
+function _esc(s) {
+  return String(s || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
+}
+
+function _mensajeError(code) {
+  const map = {
+    usuario_no_encontrado  : "Usuario no encontrado.",
+    credenciales_incorrectas: "Contraseña incorrecta.",
+    usuario_inactivo       : "Tu cuenta está inactiva. Contacta al creador.",
+    usuario_requerido      : "Introduce tu usuario.",
+    pwd_hash_requerido     : "Introduce tu contraseña."
+  };
+  return map[code] || ("Error: " + (code || "desconocido"));
+}
+
+function _placeholderThumbHTML() {
+  const icons = ["📜","🌹","✉️","💌","🕊️","🌙","⭐","🌸"];
+  const icon  = icons[Math.floor(Math.random() * icons.length)];
+  return `<div class="poem-thumb-placeholder">
+    <span class="placeholder-icon">${icon}</span>
+  </div>`;
+}
+
+function _placeholderThumb() {
+  const el = document.createElement("div");
+  el.className = "poem-thumb-placeholder";
+  const icons = ["📜","🌹","✉️","💌","🕊️","🌙","⭐","🌸"];
+  el.innerHTML = `<span class="placeholder-icon">${icons[Math.floor(Math.random()*icons.length)]}</span>`;
+  return el;
+}
+
+function _inyectarManifest() {
+  const manifest = {
+    name: "Poemenizador Da Vinci",
+    short_name: "Poemenizador",
+    description: "Tu galería privada de poemas",
+    start_url: "./",
+    display: "standalone",
+    orientation: "portrait",
+    background_color: "#0d0b14",
+    theme_color: "#0d0b14",
+    icons: [
+      { src: _iconSvgDataUrl(192), sizes: "192x192", type: "image/svg+xml" },
+      { src: _iconSvgDataUrl(512), sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+  const url  = URL.createObjectURL(blob);
+  document.getElementById("pwa-manifest").href = url;
+}
+
+function _iconSvgDataUrl(size) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}">
+    <rect width="${size}" height="${size}" fill="#0d0b14"/>
+    <text x="50%" y="58%" font-size="${size*0.55}" text-anchor="middle" dominant-baseline="middle">🕊️</text>
+  </svg>`;
+  return "data:image/svg+xml;base64," + btoa(svg);
+}
+
+// ─── PULL TO REFRESH (simple) ────────────────────────────────────────
+let ptStart = 0;
+const body  = document.getElementById("gallery-body");
+
+body.addEventListener("touchstart", e => {
+  if (body.scrollTop === 0) ptStart = e.touches[0].clientY;
+}, { passive: true });
+
+body.addEventListener("touchend", e => {
+  if (!ptStart) return;
+  const dy = e.changedTouches[0].clientY - ptStart;
+  if (dy > 70 && body.scrollTop === 0) App.refrescar();
+  ptStart = 0;
+}, { passive: true });
+
+// ─── INICIO ──────────────────────────────────────────────────────────
+App.init();
+</script>
+</body>
+</html>

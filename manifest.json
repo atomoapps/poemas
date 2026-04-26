@@ -1,0 +1,37 @@
+{
+  "name": "Poemenizador Da Vinci",
+  "short_name": "Poemenizador",
+  "description": "Tu galería privada de poemas",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d0b14",
+  "theme_color": "#0d0b14",
+  "lang": "es",
+  "categories": ["entertainment", "personalization"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Mis poemas",
+      "short_name": "Galería",
+      "description": "Ver tu galería de poemas",
+      "url": "./index.html#galeria",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
