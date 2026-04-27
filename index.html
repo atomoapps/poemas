@@ -550,6 +550,12 @@
     .gallery-body::-webkit-scrollbar { width: 4px; }
     .gallery-body::-webkit-scrollbar-track { background: transparent; }
     .gallery-body::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+
+    /* ── Utilidad de visibilidad ─────────────────────────── */
+    /* Para elementos no-screen: display:none cuando tienen clase hidden */
+    .hidden { display: none !important; }
+    /* Screens usan transición de opacidad — conservar display:block */
+    .screen.hidden { display: block !important; opacity: 0; pointer-events: none; transform: translateY(14px); }
   </style>
 </head>
 <body>
@@ -617,7 +623,7 @@
       <span class="spinner"></span>
       <span>Cargando tus poemas…</span>
     </div>
-    <div id="gallery-content" style="display:none">
+    <div id="gallery-content" class="hidden">
       <p class="ptr-hint">↑ Desliza hacia abajo para actualizar</p>
       <div class="poems-grid" id="poems-grid"></div>
     </div>
@@ -672,14 +678,21 @@ async function hashPwd(pwd) {
 }
 
 // ─── LLAMADA AL GAS ─────────────────────────────────────────────────
-async function gasPost(payload) {
-  const resp = await fetch(GAS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify(payload)
-  });
-  if (!resp.ok) throw new Error("Error HTTP " + resp.status);
-  return resp.json();
+async function gasPost(payload, timeoutMs = 30000) {
+  const ctrl = new AbortController();
+  const tid  = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const resp = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload),
+      signal: ctrl.signal
+    });
+    if (!resp.ok) throw new Error("Error HTTP " + resp.status);
+    return resp.json();
+  } finally {
+    clearTimeout(tid);
+  }
 }
 
 // ─── UTILIDADES ─────────────────────────────────────────────────────
@@ -849,7 +862,14 @@ const App = {
 
       hide("gallery-loading");
 
-      if (!res.ok || !res.poemas) { toast("Error al cargar poemas."); return; }
+      if (!res.ok || !res.poemas) {
+        const msg = res.error === "acceso_denegado"
+          ? "Sesión no verificada. Vuelve a iniciar sesión."
+          : (res.error || "Error al cargar poemas.");
+        el("gallery-empty").querySelector("p").textContent = "⚠️ " + msg;
+        show("gallery-empty");
+        return;
+      }
 
       if (res.poemas.length === 0) {
         show("gallery-empty");
@@ -863,8 +883,11 @@ const App = {
 
     } catch(e) {
       hide("gallery-loading");
-      toast("Sin conexión — mostrando caché.");
-      // Podría mostrarse caché del SW aquí
+      const esMsgAbort = e.name === "AbortError";
+      const msg = esMsgAbort ? "La petición tardó demasiado. Comprueba tu conexión." : "Sin conexión.";
+      toast(msg);
+      el("gallery-empty").querySelector("p").textContent = "⚠️ " + msg;
+      show("gallery-empty");
     }
   },
 
