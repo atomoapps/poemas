@@ -551,6 +551,9 @@
     .gallery-body::-webkit-scrollbar-track { background: transparent; }
     .gallery-body::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
 
+    /* ── Visor de poema fullscreen ──────────────────────────── */
+    #visor-overlay:not(.hidden) { display: flex !important; }
+
     /* ── Utilidad de visibilidad ─────────────────────────── */
     /* Para elementos no-screen: display:none cuando tienen clase hidden */
     .hidden { display: none !important; }
@@ -655,6 +658,31 @@
 </div>
 
 
+<!-- VISOR DE POEMA (modal fullscreen) -->
+<div id="visor-overlay" class="hidden" style="
+  position:fixed;inset:0;z-index:500;
+  background:var(--bg);
+  display:flex;flex-direction:column;">
+
+  <div style="display:flex;align-items:center;gap:10px;
+    padding:10px 14px;background:var(--bg-2);
+    border-bottom:1px solid var(--border);flex-shrink:0;">
+    <button onclick="App.cerrarVisor()" style="
+      background:var(--surface);border:1px solid var(--border);
+      color:var(--text-2);border-radius:50%;width:34px;height:34px;
+      font-size:1rem;cursor:pointer;flex-shrink:0;">✕</button>
+    <span id="visor-titulo" style="
+      font-family:'Cormorant Garamond',serif;font-size:1.1rem;
+      color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    <div id="visor-spinner" class="spinner" style="margin-left:auto;flex-shrink:0;"></div>
+  </div>
+
+  <iframe id="visor-frame"
+    sandbox="allow-scripts allow-same-origin"
+    style="flex:1;border:none;width:100%;background:#fff;"
+    title="Poema"></iframe>
+</div>
+
 <!-- TOAST -->
 <div id="toast"></div>
 
@@ -667,7 +695,7 @@
 
 // ─── CONFIGURACIÓN ──────────────────────────────────────────────────
 // 👉 CAMBIA ESTA URL por la de tu despliegue de GAS v6.0
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyy6ZI632U54wAmSp0mT256gkS18oszRB0l5bVdey56zordSivncGRyoC9r8y-DV79C/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbw6gl2lyGHxm1Cq38jSLSKMn43eXF8bUQdRNEVyGGGhOBQAewrNHFqqePffEREassJU/exec";
 
 // ─── HASH SHA-256 (igual al que usa el HTML del sobre) ──────────────
 async function hashPwd(pwd) {
@@ -934,8 +962,45 @@ const App = {
   },
 
   abrirPoema(p) {
-    if (!p.url_html) { toast("Este poema no tiene URL disponible."); return; }
-    window.open(p.url_html, "_blank", "noopener,noreferrer");
+    if (!p.id) { toast("Este poema no tiene datos disponibles."); return; }
+    this.abrirVisor(p);
+  },
+
+  async abrirVisor(p) {
+    // Mostrar overlay con spinner
+    el("visor-titulo").textContent = p.titulo || "Poema";
+    el("visor-spinner").style.display = "inline-block";
+    el("visor-frame").srcdoc = "";
+    el("visor-overlay").classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+
+    try {
+      const res = await gasPost({
+        action    : "pwa_get_html",
+        poem_id   : p.id,
+        pwa_token : State.token
+      }, 25000);
+
+      if (!res.ok || !res.html) {
+        throw new Error(res.error || "No se pudo obtener el poema.");
+      }
+      el("visor-frame").srcdoc = res.html;
+    } catch(e) {
+      el("visor-frame").srcdoc =
+        `<html><body style="font-family:sans-serif;padding:30px;color:#333">
+          <h3>⚠️ No se pudo cargar el poema</h3>
+          <p>${e.message}</p>
+          <p><a href="${_esc(p.url_html || '')}" target="_blank">Abrir en Drive</a></p>
+        </body></html>`;
+    } finally {
+      el("visor-spinner").style.display = "none";
+    }
+  },
+
+  cerrarVisor() {
+    el("visor-overlay").classList.add("hidden");
+    el("visor-frame").srcdoc = "";
+    document.body.style.overflow = "";
   },
 
   refrescar() {
