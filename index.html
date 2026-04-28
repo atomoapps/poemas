@@ -667,7 +667,7 @@
 
 // ─── CONFIGURACIÓN ──────────────────────────────────────────────────
 // 👉 CAMBIA ESTA URL por la de tu despliegue de GAS v6.0
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxioO4vYIQYXFqTcoBdkwihcQVnYWqrjsDgCrCHXSVe9rK0Qgn91TSQa9u8m5S-DsLA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyy6ZI632U54wAmSp0mT256gkS18oszRB0l5bVdey56zordSivncGRyoC9r8y-DV79C/exec";
 
 // ─── HASH SHA-256 (igual al que usa el HTML del sobre) ──────────────
 async function hashPwd(pwd) {
@@ -917,8 +917,16 @@ const App = {
 
   renderThumb(p) {
     if (p.miniatura) {
-      const src = p.miniatura.startsWith("data:") ? p.miniatura
-                : "data:image/jpeg;base64," + p.miniatura;
+      let src;
+      if (p.miniatura.startsWith("data:")) {
+        src = p.miniatura;
+      } else {
+        // Detectar si es SVG (empieza con "<svg" en base64: "PHN2")
+        const esSvg = p.miniatura.startsWith("PHN2") || p.miniatura.startsWith("Cjxz");
+        src = esSvg
+          ? "data:image/svg+xml;base64," + p.miniatura
+          : "data:image/jpeg;base64,"    + p.miniatura;
+      }
       return `<img class="poem-thumb" src="${src}" alt="${_esc(p.titulo)}"
                onerror="this.parentElement.replaceChild(_placeholderThumb(), this)">`;
     }
