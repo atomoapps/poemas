@@ -585,6 +585,12 @@
              placeholder="••••••••">
     </div>
 
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+      <input type="checkbox" id="chk-recordar" style="accent-color:var(--accent);width:15px;height:15px;">
+      <label for="chk-recordar" style="font-size:0.78rem;color:var(--text-2);cursor:pointer;">
+        Recordar mis credenciales en este dispositivo
+      </label>
+    </div>
     <button id="btn-login" class="btn-primary" onclick="App.login()">Entrar</button>
 
     <div id="login-error"  class="login-error"></div>
@@ -695,7 +701,7 @@
 
 // ─── CONFIGURACIÓN ──────────────────────────────────────────────────
 // 👉 CAMBIA ESTA URL por la de tu despliegue de GAS v6.0
-const GAS_URL = "https://script.google.com/macros/s/AKfycbw6gl2lyGHxm1Cq38jSLSKMn43eXF8bUQdRNEVyGGGhOBQAewrNHFqqePffEREassJU/exec";
+const GAS_URL = "https://script.google.com/macros/s/TU_DEPLOYMENT_ID_AQUI/exec";
 
 // ─── HASH SHA-256 (igual al que usa el HTML del sobre) ──────────────
 async function hashPwd(pwd) {
@@ -764,17 +770,31 @@ const State = {
   sesionId : localStorage.getItem("pwa_sesion_id")|| "",
   nombre   : localStorage.getItem("pwa_nombre")   || "",
   usuario  : localStorage.getItem("pwa_usuario")  || "",
+  pwdHash  : localStorage.getItem("pwa_pwd_hash") || "",  // solo si el usuario eligió recordar
 
-  guardar() {
+  guardar(recordar = false) {
     localStorage.setItem("pwa_token",     this.token);
     localStorage.setItem("pwa_sesion_id", this.sesionId);
     localStorage.setItem("pwa_nombre",    this.nombre);
     localStorage.setItem("pwa_usuario",   this.usuario);
+    if (recordar) {
+      localStorage.setItem("pwa_pwd_hash", this.pwdHash);
+      localStorage.setItem("pwa_recordar", "1");
+    }
   },
   limpiar() {
-    ["pwa_token","pwa_sesion_id","pwa_nombre","pwa_usuario"]
-      .forEach(k => localStorage.removeItem(k));
-    this.token = this.sesionId = this.nombre = this.usuario = "";
+    // Conservar credenciales guardadas si el usuario eligió recordarlas
+    const recordar = localStorage.getItem("pwa_recordar") === "1";
+    const claves = ["pwa_token","pwa_sesion_id","pwa_nombre"];
+    if (!recordar) claves.push("pwa_usuario","pwa_pwd_hash","pwa_recordar");
+    claves.forEach(k => localStorage.removeItem(k));
+    this.token = this.sesionId = this.nombre = "";
+    if (!recordar) { this.usuario = ""; this.pwdHash = ""; }
+  },
+  tieneCredenciales() {
+    return !!(localStorage.getItem("pwa_recordar") === "1"
+           && localStorage.getItem("pwa_usuario")
+           && localStorage.getItem("pwa_pwd_hash"));
   }
 };
 
@@ -799,6 +819,12 @@ const App = {
     el("inp-usuario").addEventListener("keydown", e => {
       if (e.key === "Enter") el("inp-pwd").focus();
     });
+
+    // Pre-rellenar si hay credenciales guardadas
+    if (State.tieneCredenciales()) {
+      el("chk-recordar").checked = true;
+      if (!el("inp-usuario").value) el("inp-usuario").value = State.usuario;
+    }
 
     // Auto-login si hay token guardado
     if (State.token && State.sesionId) {
@@ -841,11 +867,13 @@ const App = {
       const res = await gasPost({ action: "pwa_login", usuario, pwd_hash: pwdHash });
 
       if (res.ok) {
+        const recordar  = el("chk-recordar").checked;
         State.token    = res.token;
         State.sesionId = res.sesion_id;
         State.nombre   = res.nombre;
         State.usuario  = usuario;
-        State.guardar();
+        State.pwdHash  = pwdHash;
+        State.guardar(recordar);
         this.mostrarGaleria();
       } else {
         this.mostrarError(_mensajeError(res.error));
@@ -967,7 +995,6 @@ const App = {
   },
 
   async abrirVisor(p) {
-    // Mostrar overlay con spinner
     el("visor-titulo").textContent = p.titulo || "Poema";
     el("visor-spinner").style.display = "inline-block";
     el("visor-frame").srcdoc = "";
@@ -975,23 +1002,31 @@ const App = {
     document.body.style.overflow = "hidden";
 
     try {
+      // Pedir el HTML crudo al GAS
       const res = await gasPost({
         action    : "pwa_get_html",
         poem_id   : p.id,
         pwa_token : State.token
-      }, 25000);
+      }, 30000);
 
-      if (!res.ok || !res.html) {
-        throw new Error(res.error || "No se pudo obtener el poema.");
-      }
+      if (!res.ok || !res.html) throw new Error(res.error || "Sin contenido");
+
+      // Inyectar directamente en el iframe — se renderiza como página completa
       el("visor-frame").srcdoc = res.html;
+
     } catch(e) {
-      el("visor-frame").srcdoc =
-        `<html><body style="font-family:sans-serif;padding:30px;color:#333">
-          <h3>⚠️ No se pudo cargar el poema</h3>
-          <p>${e.message}</p>
-          <p><a href="${_esc(p.url_html || '')}" target="_blank">Abrir en Drive</a></p>
-        </body></html>`;
+      // Fallback: crear blob URL local y abrir en nueva pestaña
+      console.warn("pwa_get_html falló, usando fallback:", e.message);
+      el("visor-overlay").classList.add("hidden");
+      document.body.style.overflow = "";
+
+      // Si el error es de red/timeout, avisar
+      if (e.name === "AbortError" || e.message.includes("timeout")) {
+        toast("⏱ Tiempo agotado. El GAS puede necesitar redeployarse con la versión nueva.");
+      } else {
+        toast("⚠️ Abriendo en Drive... (actualiza el GAS para ver el poema aquí)");
+        window.open(p.url_html || "#", "_blank", "noopener");
+      }
     } finally {
       el("visor-spinner").style.display = "none";
     }
