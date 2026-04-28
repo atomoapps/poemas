@@ -551,6 +551,91 @@
     .gallery-body::-webkit-scrollbar-track { background: transparent; }
     .gallery-body::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
 
+    /* ── Social: reacciones y comentarios ──────────────────── */
+    .emoji-btn {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-2);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+    .emoji-btn:hover  { border-color: var(--accent); color: var(--text); }
+    .emoji-btn:active { transform: scale(0.93); }
+    .emoji-btn.activo {
+      background: rgba(212,165,116,0.18);
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .emoji-btn .cnt { font-size: 0.75rem; }
+
+    .comentario-item {
+      display: flex;
+      gap: 8px;
+      animation: cardSlideIn 0.3s ease both;
+    }
+    .comentario-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #1a1010;
+      flex-shrink: 0;
+    }
+    .comentario-burbuja {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0 12px 12px 12px;
+      padding: 7px 12px;
+      flex: 1;
+    }
+    .comentario-nombre {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: 2px;
+    }
+    .comentario-texto {
+      font-size: 0.85rem;
+      color: var(--text);
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .comentario-fecha {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 3px;
+      font-style: italic;
+    }
+    .social-loading {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-style: italic;
+      padding: 12px;
+      font-family: 'Cormorant Garamond', serif;
+    }
+    #inp-comentario:focus {
+      border-color: rgba(212,165,116,0.5);
+      box-shadow: 0 0 0 3px rgba(212,165,116,0.1);
+    }
+    #lista-comentarios::-webkit-scrollbar { width: 3px; }
+    #lista-comentarios::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+
     /* ── Visor de poema fullscreen ──────────────────────────── */
     #visor-overlay:not(.hidden) { display: flex !important; }
 
@@ -657,12 +742,71 @@
     <button class="sheet-btn" onclick="App.refrescar(); App.cerrarMenu();">
       <span class="sheet-btn-icon">🔄</span> Actualizar galería
     </button>
+    <button class="sheet-btn" onclick="App.abrirCambiarPwd()">
+      <span class="sheet-btn-icon">🔑</span> Cambiar contraseña
+    </button>
     <button class="sheet-btn danger" onclick="App.logout()">
       <span class="sheet-btn-icon">🚪</span> Cerrar sesión
     </button>
   </div>
 </div>
 
+
+<!-- PANTALLA: CAMBIAR CONTRASEÑA -->
+<section id="screen-cambiar-pwd" class="screen hidden">
+  <div style="display:flex;flex-direction:column;height:100%;
+    background:radial-gradient(ellipse 70% 55% at 50% 120%,rgba(180,120,200,0.14) 0%,transparent 70%),var(--bg);
+    justify-content:center;align-items:center;padding:24px;">
+
+    <div style="width:100%;max-width:360px;background:var(--surface);
+      border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:36px 32px 28px;box-shadow:var(--shadow);">
+
+      <div style="text-align:center;margin-bottom:28px;">
+        <span style="font-size:2.2rem;filter:drop-shadow(0 0 10px rgba(212,165,116,0.4))">🔑</span>
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;
+          font-weight:400;color:var(--text);margin-top:8px;">Cambiar contraseña</h2>
+        <p style="font-size:0.78rem;color:var(--text-2);font-style:italic;
+          font-family:'Cormorant Garamond',serif;margin-top:4px;" id="pwd-usuario-label"></p>
+      </div>
+
+      <div class="field">
+        <label for="inp-pwd-actual">Contraseña actual</label>
+        <input id="inp-pwd-actual" type="password" autocomplete="current-password"
+               placeholder="••••••••">
+      </div>
+      <div class="field">
+        <label for="inp-pwd-nueva">Nueva contraseña</label>
+        <input id="inp-pwd-nueva" type="password" autocomplete="new-password"
+               placeholder="••••••••">
+      </div>
+      <div class="field">
+        <label for="inp-pwd-confirmar">Confirmar nueva contraseña</label>
+        <input id="inp-pwd-confirmar" type="password" autocomplete="new-password"
+               placeholder="••••••••">
+      </div>
+
+      <button class="btn-primary" onclick="App.guardarNuevaPwd()" style="margin-top:4px;">
+        Guardar nueva contraseña
+      </button>
+
+      <button onclick="App.volverDesdeCambiarPwd()" style="
+        width:100%;margin-top:10px;padding:10px;
+        background:transparent;border:1px solid var(--border);
+        border-radius:10px;color:var(--text-2);cursor:pointer;
+        font-family:'DM Sans',sans-serif;font-size:0.85rem;">
+        ← Volver
+      </button>
+
+      <div id="pwd-error"  class="login-error"  style="margin-top:12px;"></div>
+      <div id="pwd-ok" style="display:none;margin-top:12px;padding:10px 14px;
+        background:rgba(126,200,160,0.12);border:1px solid rgba(126,200,160,0.3);
+        border-radius:8px;font-size:0.82rem;color:var(--success);text-align:center;">
+        ✅ Contraseña actualizada correctamente
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- VISOR DE POEMA (modal fullscreen) -->
 <div id="visor-overlay" class="hidden" style="
@@ -687,6 +831,44 @@
     sandbox="allow-scripts allow-same-origin"
     style="flex:1;border:none;width:100%;background:#fff;"
     title="Poema"></iframe>
+
+  <!-- ── Panel reacciones + comentarios ── -->
+  <div id="panel-social" style="
+    flex-shrink:0;
+    background:var(--bg-2);
+    border-top:1px solid var(--border);
+    max-height:45vh;
+    display:flex;flex-direction:column;">
+
+    <!-- Barra de emojis -->
+    <div id="barra-emojis" style="
+      display:flex;align-items:center;gap:4px;flex-wrap:wrap;
+      padding:8px 14px;border-bottom:1px solid var(--border);">
+    </div>
+
+    <!-- Comentarios -->
+    <div id="lista-comentarios" style="
+      flex:1;overflow-y:auto;padding:8px 14px;
+      display:flex;flex-direction:column;gap:8px;">
+    </div>
+
+    <!-- Escribir comentario -->
+    <div style="
+      display:flex;gap:8px;padding:8px 14px;
+      border-top:1px solid var(--border);background:var(--surface);">
+      <input id="inp-comentario" type="text" maxlength="500"
+        placeholder="Escribe un comentario…"
+        style="flex:1;background:var(--bg-2);border:1px solid var(--border);
+               border-radius:20px;padding:8px 14px;color:var(--text);
+               font-family:'DM Sans',sans-serif;font-size:0.85rem;outline:none;">
+      <button onclick="Social.enviarComentario()" style="
+        background:var(--accent);border:none;border-radius:50%;
+        width:36px;height:36px;font-size:1rem;cursor:pointer;
+        flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+        ➤
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- TOAST -->
@@ -701,7 +883,7 @@
 
 // ─── CONFIGURACIÓN ──────────────────────────────────────────────────
 // 👉 CAMBIA ESTA URL por la de tu despliegue de GAS v6.0
-const GAS_URL = "https://script.google.com/macros/s/AKfycbz8rg3fCSPMbIRkHsfrkrR38Ya-SYmaqCiTXCeRJAYSawYdF4x6iIyM_MX9zXKrlzXQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyjMSGvjr5s2ZS1bTXkHqS5HrSpjMukv01O8cREw2T8zhL0VhWk1nLo5OHn6tho7Esb/exec";
 
 // ─── HASH SHA-256 (igual al que usa el HTML del sobre) ──────────────
 async function hashPwd(pwd) {
@@ -815,6 +997,12 @@ const App = {
     // Enter en campos
     el("inp-pwd").addEventListener("keydown", e => {
       if (e.key === "Enter") this.login();
+    });
+    el("inp-comentario").addEventListener("keydown", e => {
+      if (e.key === "Enter") Social.enviarComentario();
+    });
+    el("inp-pwd-confirmar").addEventListener("keydown", e => {
+      if (e.key === "Enter") App.guardarNuevaPwd();
     });
     el("inp-usuario").addEventListener("keydown", e => {
       if (e.key === "Enter") el("inp-pwd").focus();
@@ -1013,6 +1201,7 @@ const App = {
 
       // Inyectar directamente en el iframe — se renderiza como página completa
       el("visor-frame").srcdoc = res.html;
+      Social.cargar(p.id, p.sesion_id || State.sesionId);
 
     } catch(e) {
       // Fallback: crear blob URL local y abrir en nueva pestaña
@@ -1035,7 +1224,81 @@ const App = {
   cerrarVisor() {
     el("visor-overlay").classList.add("hidden");
     el("visor-frame").srcdoc = "";
+    el("lista-comentarios").innerHTML = "";
+    el("barra-emojis").innerHTML = "";
+    el("inp-comentario").value = "";
+    Social._poemId = "";
     document.body.style.overflow = "";
+  },
+
+  abrirCambiarPwd() {
+    this.cerrarMenu();
+    el("pwd-usuario-label").textContent = "@" + State.usuario;
+    el("inp-pwd-actual").value = "";
+    el("inp-pwd-nueva").value  = "";
+    el("inp-pwd-confirmar").value = "";
+    el("pwd-error").classList.remove("visible");
+    el("pwd-ok").style.display = "none";
+    showScreen("screen-cambiar-pwd");
+  },
+
+  volverDesdeCambiarPwd() {
+    showScreen("screen-galeria");
+  },
+
+  async guardarNuevaPwd() {
+    const actual     = el("inp-pwd-actual").value;
+    const nueva      = el("inp-pwd-nueva").value;
+    const confirmar  = el("inp-pwd-confirmar").value;
+    const err        = el("pwd-error");
+    const ok         = el("pwd-ok");
+
+    err.classList.remove("visible");
+    ok.style.display = "none";
+
+    if (!actual)    { err.textContent = "Escribe tu contraseña actual.";    err.classList.add("visible"); return; }
+    if (!nueva)     { err.textContent = "Escribe la nueva contraseña.";     err.classList.add("visible"); return; }
+    if (nueva.length < 6) { err.textContent = "La contraseña debe tener al menos 6 caracteres."; err.classList.add("visible"); return; }
+    if (nueva !== confirmar) { err.textContent = "Las contraseñas no coinciden."; err.classList.add("visible"); return; }
+    if (nueva === actual)    { err.textContent = "La nueva contraseña debe ser diferente."; err.classList.add("visible"); return; }
+
+    const btnGuardar = document.querySelector("#screen-cambiar-pwd .btn-primary");
+    btnGuardar.disabled = true;
+    btnGuardar.textContent = "Guardando…";
+
+    try {
+      const [hashActual, hashNueva] = await Promise.all([hashPwd(actual), hashPwd(nueva)]);
+      const res = await gasPost({
+        action          : "pwa_cambiar_pwd",
+        pwd_actual_hash : hashActual,
+        pwd_nueva_hash  : hashNueva,
+        pwa_token       : State.token
+      });
+
+      if (res.ok) {
+        ok.style.display = "block";
+        // Actualizar hash guardado en localStorage si tenía "recordar"
+        if (localStorage.getItem("pwa_recordar") === "1") {
+          State.pwdHash = hashNueva;
+          State.guardar(true);
+        }
+        setTimeout(() => this.volverDesdeCambiarPwd(), 2000);
+      } else {
+        const msgs = {
+          pwd_actual_incorrecta     : "La contraseña actual es incorrecta.",
+          la_nueva_debe_ser_diferente: "La nueva contraseña debe ser diferente a la actual.",
+          token_invalido            : "Tu sesión expiró. Vuelve a iniciar sesión."
+        };
+        err.textContent = msgs[res.error] || ("Error: " + res.error);
+        err.classList.add("visible");
+      }
+    } catch(e) {
+      err.textContent = "Error de conexión. Inténtalo de nuevo.";
+      err.classList.add("visible");
+    } finally {
+      btnGuardar.disabled  = false;
+      btnGuardar.textContent = "Guardar nueva contraseña";
+    }
   },
 
   refrescar() {
@@ -1139,6 +1402,183 @@ body.addEventListener("touchend", e => {
   if (dy > 70 && body.scrollTop === 0) App.refrescar();
   ptStart = 0;
 }, { passive: true });
+
+// ─── MÓDULO SOCIAL — Reacciones y Comentarios ───────────────────────
+const EMOJIS = ["❤️","😂","😮","😢","🔥","👏","🥹","💌"];
+
+const Social = {
+  _poemId : "",
+  _conteos: {},
+  _miEmoji: "",
+
+  // Llamado desde abrirVisor después de cargar el HTML
+  async cargar(poemId, poemSesionId) {
+    this._poemId      = poemId;
+    this._sesionActual = poemSesionId || "";  // sesion del poema
+    // Puede comentar si el token pertenece al dueño de esa sesión
+    this._puedecomentar = (State.sesionId && State.sesionId === this._sesionActual);
+    this._renderEmojis();  // mostrar barra vacía inmediatamente
+    el("lista-comentarios").innerHTML =
+      '<div class="social-loading">Cargando reacciones…</div>';
+
+    // Cargar reacciones y comentarios en paralelo
+    try {
+      const [rRes, cRes] = await Promise.all([
+        gasPost({ action:"pwa_listar_reacciones", poem_id:poemId, pwa_token:State.token }),
+        gasPost({ action:"pwa_listar_comentarios", poem_id:poemId })
+      ]);
+
+      if (rRes.ok) { this._conteos = rRes.conteos || {}; this._miEmoji = rRes.mi_reaccion || ""; }
+      this._renderEmojis();
+      this._actualizarPermisoComentario();
+
+      if (cRes.ok) this._renderComentarios(cRes.comentarios || []);
+      else el("lista-comentarios").innerHTML = '<div class="social-loading">Sin comentarios aún.</div>';
+
+    } catch(e) {
+      el("lista-comentarios").innerHTML =
+        '<div class="social-loading">⚠️ Sin conexión.</div>';
+    }
+  },
+
+  _actualizarPermisoComentario() {
+    const inp  = el("inp-comentario");
+    const btn  = inp.nextElementSibling;
+    const puede = this._puedecomentario !== false && this._puedeComentarReal();
+    inp.disabled    = !puede;
+    btn.disabled    = !puede;
+    inp.placeholder = puede
+      ? "Escribe un comentario…"
+      : "Solo el destinatario puede comentar aquí 🔒";
+    inp.style.opacity = puede ? "1" : "0.5";
+    btn.style.opacity = puede ? "1" : "0.4";
+  },
+
+  _puedeComentarReal() {
+    // Puede comentar si su sesionId coincide con la sesión del poema
+    return !!(State.token && State.sesionId && this._sesionActual
+           && State.sesionId === this._sesionActual);
+  },
+
+  _renderEmojis() {
+    const bar = el("barra-emojis");
+    bar.innerHTML = "";
+
+    // Etiqueta "Reacciones"
+    const lbl = document.createElement("span");
+    lbl.style.cssText = "font-size:0.72rem;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-right:4px;";
+    lbl.textContent = "Reaccionar:";
+    bar.appendChild(lbl);
+
+    EMOJIS.forEach(emoji => {
+      const cnt  = (this._conteos[emoji] || 0);
+      const activo = this._miEmoji === emoji;
+      const btn  = document.createElement("button");
+      btn.className = "emoji-btn" + (activo ? " activo" : "");
+      btn.innerHTML = `${emoji}${cnt > 0 ? ` <span class="cnt">${cnt}</span>` : ""}`;
+      btn.title     = activo ? "Quitar reacción" : "Reaccionar con " + emoji;
+      btn.onclick   = () => this.reaccionar(emoji);
+      bar.appendChild(btn);
+    });
+  },
+
+  _renderComentarios(comentarios) {
+    const lista = el("lista-comentarios");
+    if (!comentarios.length) {
+      lista.innerHTML = '<div class="social-loading">Sé el primero en comentar ✨</div>';
+      return;
+    }
+    lista.innerHTML = "";
+    comentarios.forEach(c => {
+      const item = document.createElement("div");
+      item.className = "comentario-item";
+      const inicial = (c.nombre || "?").charAt(0).toUpperCase();
+      item.innerHTML = `
+        <div class="comentario-avatar">${inicial}</div>
+        <div class="comentario-burbuja">
+          <div class="comentario-nombre">${_esc(c.nombre)}</div>
+          <div class="comentario-texto">${_esc(c.texto)}</div>
+          <div class="comentario-fecha">${_formatFechaSocial(c.creado_en)}</div>
+        </div>`;
+      lista.appendChild(item);
+    });
+    // Scroll al último comentario
+    lista.scrollTop = lista.scrollHeight;
+  },
+
+  async reaccionar(emoji) {
+    if (!State.token) { toast("Inicia sesión para reaccionar."); return; }
+    if (!this._poemId) return;
+    try {
+      const res = await gasPost({
+        action   : "pwa_reaccionar",
+        poem_id  : this._poemId,
+        emoji,
+        pwa_token: State.token
+      });
+      if (res.ok) {
+        this._conteos = res.conteos || {};
+        this._miEmoji = res.mi_reaccion || "";
+        this._renderEmojis();
+      }
+    } catch(e) { toast("Error al reaccionar."); }
+  },
+
+  async enviarComentario() {
+    if (!State.token) { toast("Inicia sesión para comentar."); return; }
+    const inp   = el("inp-comentario");
+    const texto = inp.value.trim();
+    if (!texto) return;
+    inp.disabled = true;
+
+    try {
+      const res = await gasPost({
+        action   : "pwa_comentar",
+        poem_id  : this._poemId,
+        texto,
+        pwa_token: State.token
+      });
+      if (res.ok) {
+        inp.value = "";
+        // Añadir el comentario localmente sin recargar todo
+        const c    = res.comentario;
+        const lista = el("lista-comentarios");
+        const placeholder = lista.querySelector(".social-loading");
+        if (placeholder) placeholder.remove();
+        const item = document.createElement("div");
+        item.className = "comentario-item";
+        const inicial = (c.nombre || "?").charAt(0).toUpperCase();
+        item.style.animation = "cardSlideIn 0.3s ease both";
+        item.innerHTML = `
+          <div class="comentario-avatar">${inicial}</div>
+          <div class="comentario-burbuja">
+            <div class="comentario-nombre">${_esc(c.nombre)}</div>
+            <div class="comentario-texto">${_esc(c.texto)}</div>
+            <div class="comentario-fecha">ahora mismo</div>
+          </div>`;
+        lista.appendChild(item);
+        lista.scrollTop = lista.scrollHeight;
+      } else {
+        const msg = res.error === "solo_el_destinatario_puede_comentar"
+        ? "Solo el destinatario puede comentar en este poema."
+        : (res.error || "Error al comentar.");
+      toast(msg);
+      }
+    } catch(e) {
+      toast("Error de conexión.");
+    } finally {
+      inp.disabled = false;
+      inp.focus();
+    }
+  }
+};
+
+function _formatFechaSocial(str) {
+  if (!str) return "";
+  const m = str.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})/);
+  if (!m) return str;
+  return `${m[1]}/${m[2]}/${m[3]} ${m[4]}:${m[5]}`;
+}
 
 // ─── INICIO ──────────────────────────────────────────────────────────
 App.init();
