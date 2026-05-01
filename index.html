@@ -14,643 +14,342 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <title>Poemenizador Da Vinci</title>
 
-  <style>
-    /* ═══════════════════════════════════════════
-       VARIABLES Y RESET
-    ═══════════════════════════════════════════ */
-    :root {
-      --bg:          #0d0b14;
-      --bg-2:        #13101e;
-      --surface:     #1a1628;
-      --surface-2:   #221d32;
-      --border:      rgba(200,185,230,0.10);
-      --accent:      #d4a574;    /* oro viejo */
-      --accent-2:    #c4a0c0;    /* malva */
-      --accent-glow: rgba(212,165,116,0.18);
-      --text:        #ede7dc;
-      --text-2:      #a89dba;
-      --muted:       #5e5673;
-      --danger:      #e07070;
-      --success:     #7ec8a0;
-      --radius:      14px;
-      --radius-lg:   20px;
-      --shadow:      0 8px 40px rgba(0,0,0,0.6);
-      --trans:        all 0.28s cubic-bezier(0.34,1.2,0.64,1);
-    }
+<style>
+/* ═══════════════════════════════════════════════════════
+   VARIABLES (sobrescritas por el sistema de temas)
+═══════════════════════════════════════════════════════ */
+:root {
+  --bg:          #0d0b14;
+  --bg-2:        #13101e;
+  --surface:     #1a1628;
+  --surface-2:   #221d32;
+  --border:      rgba(200,185,230,0.10);
+  --accent:      #d4a574;
+  --accent-2:    #c4a0c0;
+  --accent-glow: rgba(212,165,116,0.18);
+  --text:        #ede7dc;
+  --text-2:      #a89dba;
+  --muted:       #5e5673;
+  --danger:      #e07070;
+  --success:     #7ec8a0;
+  --radius:      14px;
+  --radius-lg:   20px;
+  --shadow:      0 8px 40px rgba(0,0,0,0.6);
+  --trans:       all 0.28s cubic-bezier(0.34,1.2,0.64,1);
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html,body { height:100%; background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-weight:300; -webkit-font-smoothing:antialiased; overflow:hidden; }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── Pantallas ─────────────────────────────────────── */
+.screen { position:fixed; inset:0; display:flex; flex-direction:column; transition:opacity .38s ease,transform .38s ease; will-change:transform,opacity; }
+.screen.hidden { opacity:0; pointer-events:none; transform:translateY(14px); display:block !important; }
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 300;
-      -webkit-font-smoothing: antialiased;
-      overflow: hidden;
-    }
+/* ══════════════════════════════════════════════════════
+   LOGIN
+══════════════════════════════════════════════════════ */
+#screen-login {
+  justify-content:center; align-items:center; padding:24px;
+  background:radial-gradient(ellipse 70% 55% at 50% 120%,rgba(180,120,200,.14) 0%,transparent 70%),
+             radial-gradient(ellipse 50% 40% at 80% -10%,rgba(212,165,116,.10) 0%,transparent 60%),
+             var(--bg);
+}
+#screen-login::before {
+  content:''; position:fixed; inset:0; pointer-events:none;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%,rgba(212,165,116,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 75% 20%,rgba(196,160,192,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 55% 80%,rgba(212,165,116,.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 10% 70%,rgba(196,160,192,.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 90% 60%,rgba(212,165,116,.4) 0%,transparent 100%);
+}
+.login-card { width:100%; max-width:360px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:42px 36px 36px; box-shadow:var(--shadow),0 0 60px rgba(180,120,200,.08); animation:cardIn .6s cubic-bezier(.22,1,.36,1) both; }
+@keyframes cardIn { from{opacity:0;transform:translateY(28px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+.login-logo { text-align:center; margin-bottom:32px; }
+.login-logo .logo-icon { font-size:2.6rem; margin-bottom:10px; display:block; filter:drop-shadow(0 0 12px rgba(212,165,116,.4)); }
+.login-logo h1 { font-family:'Cormorant Garamond',serif; font-size:1.65rem; font-weight:400; letter-spacing:.02em; }
+.login-logo p  { font-size:.78rem; color:var(--text-2); margin-top:4px; font-style:italic; font-family:'Cormorant Garamond',serif; letter-spacing:.04em; }
+.field { margin-bottom:16px; }
+.field label { display:block; font-size:.72rem; color:var(--text-2); letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; }
+.field input { width:100%; background:var(--bg-2); border:1px solid var(--border); border-radius:10px; padding:13px 16px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:300; outline:none; transition:border-color .2s,box-shadow .2s; }
+.field input:focus { border-color:rgba(212,165,116,.5); box-shadow:0 0 0 3px rgba(212,165,116,.1); }
+.field input::placeholder { color:var(--muted); }
+.btn-primary { width:100%; padding:14px; background:linear-gradient(135deg,#c49255,#d4a574); border:none; border-radius:10px; color:#1a1010; font-family:'DM Sans',sans-serif; font-size:.9rem; font-weight:500; letter-spacing:.05em; cursor:pointer; margin-top:8px; transition:var(--trans); position:relative; overflow:hidden; }
+.btn-primary::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,.12),transparent); opacity:0; transition:opacity .2s; }
+.btn-primary:hover::after { opacity:1; }
+.btn-primary:active { transform:scale(.98); }
+.btn-primary:disabled { opacity:.5; cursor:not-allowed; }
+.login-error { margin-top:14px; padding:10px 14px; background:rgba(224,112,112,.12); border:1px solid rgba(224,112,112,.3); border-radius:8px; font-size:.82rem; color:var(--danger); display:none; }
+.login-error.visible { display:block; }
+.login-spinner { display:none; align-items:center; justify-content:center; gap:8px; font-size:.82rem; color:var(--text-2); margin-top:14px; }
+.login-spinner.visible { display:flex; }
 
-    /* ═══════════════════════════════════════════
-       PANTALLAS
-    ═══════════════════════════════════════════ */
-    .screen {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      transition: opacity 0.38s ease, transform 0.38s ease;
-      will-change: transform, opacity;
-    }
-    .screen.hidden  { opacity: 0; pointer-events: none; transform: translateY(14px); }
-    .screen.slide-out { opacity: 0; transform: translateX(-22px); }
+/* ══════════════════════════════════════════════════════
+   GALERÍA — Header compacto (SIN barra extra de usuario)
+══════════════════════════════════════════════════════ */
+#screen-galeria { background:var(--bg); overflow:hidden; }
 
-    /* ═══════════════════════════════════════════
-       PANTALLA LOGIN
-    ═══════════════════════════════════════════ */
-    #screen-login {
-      justify-content: center;
-      align-items: center;
-      background:
-        radial-gradient(ellipse 70% 55% at 50% 120%, rgba(180,120,200,0.14) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 40% at 80% -10%,  rgba(212,165,116,0.10) 0%, transparent 60%),
-        var(--bg);
-      padding: 24px;
-    }
+.gallery-header {
+  flex-shrink:0; display:flex; align-items:center; gap:10px;
+  padding:10px 16px; border-bottom:1px solid var(--border);
+  background:var(--bg-2); min-height:52px;
+}
+.gallery-logo-small { font-size:1.3rem; flex-shrink:0; filter:drop-shadow(0 0 8px rgba(212,165,116,.4)); }
+.gallery-header-info { flex:1; min-width:0; }
+.gallery-title    { font-family:'Cormorant Garamond',serif; font-size:1rem; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gallery-subtitle { font-size:.7rem; color:var(--text-2); font-style:italic; font-family:'Cormorant Garamond',serif; }
 
-    /* partículas decorativas */
-    #screen-login::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        radial-gradient(1px 1px at 20% 30%, rgba(212,165,116,0.5) 0%, transparent 100%),
-        radial-gradient(1px 1px at 75% 20%, rgba(196,160,192,0.5) 0%, transparent 100%),
-        radial-gradient(1px 1px at 55% 80%, rgba(212,165,116,0.3) 0%, transparent 100%),
-        radial-gradient(1px 1px at 10% 70%, rgba(196,160,192,0.3) 0%, transparent 100%),
-        radial-gradient(1px 1px at 90% 60%, rgba(212,165,116,0.4) 0%, transparent 100%);
-      pointer-events: none;
-    }
+.btn-icon { width:36px; height:36px; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text-2); font-size:.95rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:var(--trans); flex-shrink:0; position:relative; }
+.btn-icon:hover  { background:var(--surface-2); color:var(--text); }
+.btn-icon:active { transform:scale(.92); }
 
-    .login-card {
-      width: 100%;
-      max-width: 360px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 42px 36px 36px;
-      box-shadow: var(--shadow), 0 0 60px rgba(180,120,200,0.08);
-      animation: cardIn 0.6s cubic-bezier(0.22,1,0.36,1) both;
-    }
+.gallery-body { flex:1; overflow-y:auto; overflow-x:hidden; padding:14px 14px 28px; -webkit-overflow-scrolling:touch; }
+.gallery-body::-webkit-scrollbar { width:4px; }
+.gallery-body::-webkit-scrollbar-track { background:transparent; }
+.gallery-body::-webkit-scrollbar-thumb { background:var(--muted); border-radius:2px; }
+.ptr-hint { text-align:center; font-size:.7rem; color:var(--muted); padding:4px 0 14px; font-style:italic; font-family:'Cormorant Garamond',serif; }
+.gallery-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:60px 20px; text-align:center; color:var(--muted); }
+.gallery-empty .empty-icon { font-size:3rem; opacity:.5; }
+.gallery-empty p { font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-style:italic; }
 
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(28px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0)    scale(1); }
-    }
+.poems-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+@media(min-width:500px){ .poems-grid { grid-template-columns:repeat(3,1fr); } }
+@media(min-width:700px){ .poems-grid { grid-template-columns:repeat(4,1fr); } }
 
-    .login-logo {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    .login-logo .logo-icon {
-      font-size: 2.6rem;
-      margin-bottom: 10px;
-      display: block;
-      filter: drop-shadow(0 0 12px rgba(212,165,116,0.4));
-    }
-    .login-logo h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.65rem;
-      font-weight: 400;
-      color: var(--text);
-      letter-spacing: 0.02em;
-    }
-    .login-logo p {
-      font-size: 0.78rem;
-      color: var(--text-2);
-      margin-top: 4px;
-      font-style: italic;
-      font-family: 'Cormorant Garamond', serif;
-      letter-spacing: 0.04em;
-    }
+.poem-card { border-radius:var(--radius); overflow:hidden; background:var(--surface); border:1px solid var(--border); cursor:pointer; transition:var(--trans); animation:cardSlideIn .4s ease both; position:relative; }
+.poem-card:active { transform:scale(.96); }
+.poem-card:hover  { border-color:rgba(212,165,116,.3); box-shadow:0 4px 24px rgba(0,0,0,.4); }
+@keyframes cardSlideIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 
-    .field {
-      margin-bottom: 16px;
-    }
-    .field label {
-      display: block;
-      font-size: 0.72rem;
-      color: var(--text-2);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-    .field input {
-      width: 100%;
-      background: var(--bg-2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 13px 16px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 300;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .field input:focus {
-      border-color: rgba(212,165,116,0.5);
-      box-shadow: 0 0 0 3px rgba(212,165,116,0.1);
-    }
-    .field input::placeholder { color: var(--muted); }
+.poem-thumb { width:100%; aspect-ratio:3/4; object-fit:cover; display:block; background:var(--bg-2); }
+.poem-thumb-placeholder { width:100%; aspect-ratio:3/4; display:flex; flex-direction:column; align-items:center; justify-content:center; background:linear-gradient(160deg,var(--surface-2) 0%,var(--bg-2) 100%); position:relative; overflow:hidden; }
+.poem-thumb-placeholder::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(-45deg,transparent,transparent 18px,rgba(200,185,230,.03) 18px,rgba(200,185,230,.03) 19px); }
+.placeholder-icon { font-size:2.2rem; opacity:.35; z-index:1; }
+.poem-info  { padding:8px 10px 10px; }
+.poem-title { font-family:'Cormorant Garamond',serif; font-size:.88rem; font-weight:400; color:var(--text); line-height:1.3; margin-bottom:3px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.poem-date  { font-size:.65rem; color:var(--muted); font-style:italic; }
+.poem-badge-new { position:absolute; top:8px; right:8px; background:var(--accent); color:#1a1010; font-size:.6rem; font-weight:500; letter-spacing:.06em; padding:2px 7px; border-radius:20px; text-transform:uppercase; }
 
-    .btn-primary {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, #c49255, #d4a574);
-      border: none;
-      border-radius: 10px;
-      color: #1a1010;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 500;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: var(--trans);
-      position: relative;
-      overflow: hidden;
-    }
-    .btn-primary::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    .btn-primary:hover::after  { opacity: 1; }
-    .btn-primary:active { transform: scale(0.98); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.spinner { width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; display:inline-block; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.loading-overlay { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:60px 20px; color:var(--text-2); font-family:'Cormorant Garamond',serif; font-style:italic; }
 
-    .login-error {
-      margin-top: 14px;
-      padding: 10px 14px;
-      background: rgba(224,112,112,0.12);
-      border: 1px solid rgba(224,112,112,0.3);
-      border-radius: 8px;
-      font-size: 0.82rem;
-      color: var(--danger);
-      display: none;
-    }
-    .login-error.visible { display: block; }
+/* ══════════════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════════════ */
+#toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--surface-2); border:1px solid var(--border); border-radius:24px; padding:10px 22px; font-size:.82rem; color:var(--text); box-shadow:var(--shadow); z-index:9999; transition:transform .32s cubic-bezier(.34,1.3,.64,1),opacity .32s; white-space:nowrap; pointer-events:none; opacity:0; }
+#toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
 
-    .login-spinner {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-size: 0.82rem;
-      color: var(--text-2);
-      margin-top: 14px;
-    }
-    .login-spinner.visible { display: flex; }
+/* ══════════════════════════════════════════════════════
+   BOTTOM SHEET
+══════════════════════════════════════════════════════ */
+.bottom-sheet-overlay { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:800; opacity:0; pointer-events:none; transition:opacity .28s; backdrop-filter:blur(3px); }
+.bottom-sheet-overlay.open { opacity:1; pointer-events:all; }
+.bottom-sheet { position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0; border-top:1px solid var(--border); padding:16px 0 calc(env(safe-area-inset-bottom) + 16px); z-index:801; transform:translateY(100%); transition:transform .32s cubic-bezier(.34,1.1,.64,1); }
+.bottom-sheet-overlay.open .bottom-sheet { transform:translateY(0); }
+.sheet-handle { width:38px; height:4px; background:var(--muted); border-radius:2px; margin:0 auto 20px; opacity:.4; }
+.sheet-user-info { padding:0 24px 16px; border-bottom:1px solid var(--border); margin-bottom:8px; }
+.sheet-user-name  { font-family:'Cormorant Garamond',serif; font-size:1.25rem; font-weight:400; color:var(--text); }
+.sheet-user-login { font-size:.78rem; color:var(--text-2); }
+.sheet-btn { width:100%; padding:14px 24px; background:none; border:none; color:var(--text); font-family:'DM Sans',sans-serif; font-size:.9rem; text-align:left; cursor:pointer; display:flex; align-items:center; gap:12px; transition:background .18s; }
+.sheet-btn:hover  { background:rgba(255,255,255,.04); }
+.sheet-btn:active { background:rgba(255,255,255,.08); }
+.sheet-btn.danger { color:var(--danger); }
+.sheet-btn .sheet-btn-icon { font-size:1.1rem; width:24px; text-align:center; }
 
-    /* ═══════════════════════════════════════════
-       PANTALLA GALERÍA
-    ═══════════════════════════════════════════ */
-    #screen-galeria {
-      background: var(--bg);
-      overflow: hidden;
-    }
+/* ══════════════════════════════════════════════════════
+   VISOR DE POEMA — Rediseñado completamente
+══════════════════════════════════════════════════════ */
+#visor-overlay {
+  position:fixed; inset:0; z-index:500; background:var(--bg);
+  display:flex; flex-direction:column;
+}
+#visor-overlay.hidden { display:none !important; }
 
-    /* Header */
-    .gallery-header {
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 20px 14px;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg-2);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-    .gallery-header-left { display: flex; align-items: center; gap: 10px; }
-    .gallery-logo-small {
-      font-size: 1.5rem;
-      filter: drop-shadow(0 0 8px rgba(212,165,116,0.4));
-    }
-    .gallery-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.1rem;
-      font-weight: 400;
-      color: var(--text);
-    }
-    .gallery-subtitle {
-      font-size: 0.73rem;
-      color: var(--text-2);
-      font-style: italic;
-      font-family: 'Cormorant Garamond', serif;
-    }
+/* Header del visor */
+#visor-header {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 12px; background:var(--bg-2);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0; position:relative; min-height:48px;
+}
+#visor-titulo {
+  font-family:'Cormorant Garamond',serif; font-size:1rem;
+  color:var(--text); overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; flex:1;
+}
+#visor-close-btn {
+  background:var(--surface); border:1px solid var(--border);
+  color:var(--text-2); border-radius:50%; width:32px; height:32px;
+  font-size:.9rem; cursor:pointer; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  transition:var(--trans);
+}
+#visor-close-btn:hover { background:var(--surface-2); }
 
-    .btn-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-2);
-      font-size: 1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: var(--trans);
-      flex-shrink: 0;
-    }
-    .btn-icon:hover { background: var(--surface-2); color: var(--text); }
-    .btn-icon:active { transform: scale(0.92); }
+/* Progress bar — línea delgada al fondo del header */
+#visor-progress {
+  position:absolute; bottom:0; left:0; right:0; height:2px; overflow:hidden;
+}
+#visor-progress-fill {
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  transition:width .55s cubic-bezier(.1,.8,.2,1), opacity .4s;
+  border-radius:0 1px 1px 0; opacity:0;
+}
 
-    /* Barra de nombre de usuario */
-    .gallery-user-bar {
-      flex-shrink: 0;
-      padding: 10px 20px;
-      background: linear-gradient(90deg, rgba(212,165,116,0.08), transparent);
-      border-bottom: 1px solid var(--border);
-      font-size: 0.8rem;
-      color: var(--accent);
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
+/* Botón toggle social (solo móvil) */
+#btn-toggle-social { flex-shrink:0; }
+#social-badge {
+  position:absolute; top:3px; right:3px;
+  width:7px; height:7px; background:var(--accent);
+  border-radius:50%; border:1.5px solid var(--bg-2);
+}
 
-    /* Contenedor de poemas */
-    .gallery-body {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 20px 16px 32px;
-      -webkit-overflow-scrolling: touch;
-    }
+/* Cuerpo: iframe + social */
+#visor-body { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+#visor-frame { flex:1; border:none; width:100%; background:#fff; display:block; min-height:0; }
 
-    /* Pull to refresh hint */
-    .ptr-hint {
-      text-align: center;
-      font-size: 0.72rem;
-      color: var(--muted);
-      padding: 6px 0 16px;
-      font-style: italic;
-      font-family: 'Cormorant Garamond', serif;
-    }
+/* Panel social — MÓVIL: abajo, colapsable */
+#panel-social {
+  flex-shrink:0; background:var(--bg-2);
+  border-top:1px solid var(--border);
+  display:flex; flex-direction:column;
+  max-height:42vh;
+  transition:max-height .35s cubic-bezier(.34,1.1,.64,1);
+  overflow:hidden;
+}
+#panel-social.social-collapsed { max-height:50px; }
 
-    /* Estado vacío */
-    .gallery-empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      padding: 60px 20px;
-      text-align: center;
-      color: var(--muted);
-    }
-    .gallery-empty .empty-icon { font-size: 3rem; opacity: 0.5; }
-    .gallery-empty p { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-style: italic; }
+#barra-emojis {
+  display:flex; align-items:center; gap:4px; flex-wrap:wrap;
+  padding:7px 12px; border-bottom:1px solid var(--border);
+  flex-shrink:0; min-height:50px; overflow-x:auto;
+}
+#barra-emojis::-webkit-scrollbar { display:none; }
+#lista-comentarios { flex:1; overflow-y:auto; padding:8px 12px; display:flex; flex-direction:column; gap:8px; min-height:0; }
+#lista-comentarios::-webkit-scrollbar { width:3px; }
+#lista-comentarios::-webkit-scrollbar-thumb { background:var(--muted); border-radius:2px; }
+#social-input-area { display:flex; gap:8px; padding:8px 12px; border-top:1px solid var(--border); background:var(--surface); flex-shrink:0; }
+#inp-comentario { flex:1; background:var(--bg-2); border:1px solid var(--border); border-radius:20px; padding:8px 14px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:.85rem; outline:none; transition:border-color .2s,box-shadow .2s; }
+#inp-comentario:focus { border-color:rgba(212,165,116,.5); box-shadow:0 0 0 3px rgba(212,165,116,.1); }
+#btn-send-comentario { background:var(--accent); border:none; border-radius:50%; width:36px; height:36px; font-size:1rem; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:var(--trans); }
+#btn-send-comentario:active { transform:scale(.93); }
 
-    /* Grid de poemas */
-    .poems-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-    }
-    @media (min-width: 500px) { .poems-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (min-width: 700px) { .poems-grid { grid-template-columns: repeat(4, 1fr); } }
+/* DESKTOP ≥768px: iframe y social lado a lado */
+@media(min-width:768px) {
+  #visor-body  { flex-direction:row; }
+  #visor-frame { flex:1.5; min-width:0; }
+  #panel-social {
+    width:300px; flex-shrink:0; max-height:none !important;
+    border-top:none; border-left:1px solid var(--border);
+    height:100%;
+  }
+  #btn-toggle-social { display:none !important; }
+}
+@media(min-width:1024px) { #panel-social { width:340px; } }
 
-    /* Tarjeta de poema */
-    .poem-card {
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: var(--trans);
-      animation: cardSlideIn 0.4s ease both;
-      position: relative;
-    }
-    .poem-card:active { transform: scale(0.96); }
-    .poem-card:hover  { border-color: rgba(212,165,116,0.3); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+/* ── Emojis y comentarios ────────────────────────── */
+.emoji-btn { background:var(--surface); border:1.5px solid var(--border); border-radius:20px; padding:3px 9px; cursor:pointer; display:flex; align-items:center; gap:4px; color:var(--text-2); font-family:'DM Sans',sans-serif; font-size:.78rem; transition:all .18s; white-space:nowrap; flex-shrink:0; }
+.emoji-btn:hover  { border-color:var(--accent); color:var(--text); }
+.emoji-btn:active { transform:scale(.93); }
+.emoji-btn.activo { background:rgba(212,165,116,.18); border-color:var(--accent); color:var(--accent); font-weight:500; }
+.emoji-btn .cnt   { font-size:.72rem; }
+.comentario-item     { display:flex; gap:8px; animation:cardSlideIn .3s ease both; }
+.comentario-avatar   { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent-2)); display:flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:600; color:#1a1010; flex-shrink:0; }
+.comentario-burbuja  { background:var(--surface); border:1px solid var(--border); border-radius:0 12px 12px 12px; padding:6px 10px; flex:1; }
+.comentario-nombre   { font-size:.72rem; font-weight:500; color:var(--accent); margin-bottom:2px; }
+.comentario-texto    { font-size:.82rem; color:var(--text); line-height:1.4; word-break:break-word; }
+.comentario-fecha    { font-size:.65rem; color:var(--muted); margin-top:2px; font-style:italic; }
+.social-loading      { text-align:center; font-size:.78rem; color:var(--muted); font-style:italic; padding:12px; font-family:'Cormorant Garamond',serif; }
+.social-spinner-sm   { width:14px; height:14px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; display:inline-block; vertical-align:middle; margin-right:6px; }
 
-    @keyframes cardSlideIn {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+/* ══════════════════════════════════════════════════════
+   SELECTOR DE TEMAS (Fase 5)
+══════════════════════════════════════════════════════ */
+#modal-temas {
+  position:fixed; inset:0; z-index:900;
+  background:rgba(0,0,0,.6); backdrop-filter:blur(4px);
+  display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .3s;
+}
+#modal-temas.open { opacity:1; pointer-events:all; }
+#modal-temas-inner {
+  background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  border-top:1px solid var(--border); padding:20px 20px calc(env(safe-area-inset-bottom) + 20px);
+  width:100%; max-width:440px;
+  transform:translateY(100%); transition:transform .35s cubic-bezier(.34,1.1,.64,1);
+}
+#modal-temas.open #modal-temas-inner { transform:translateY(0); }
+.tema-titulo { font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--text); text-align:center; margin-bottom:16px; }
+.tema-grid   { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+.tema-item   { display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; padding:10px 4px; border-radius:12px; border:1.5px solid transparent; transition:all .22s; }
+.tema-item:hover  { background:rgba(255,255,255,.05); }
+.tema-item.activo { border-color:var(--accent); background:rgba(212,165,116,.08); }
+.tema-swatch { width:38px; height:38px; border-radius:50%; border:2px solid rgba(255,255,255,.1); }
+.tema-nombre { font-size:.63rem; color:var(--text-2); text-align:center; font-family:'Cormorant Garamond',serif; }
+.btn-sec { padding:10px 16px; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--text-2); cursor:pointer; font-family:'DM Sans',sans-serif; font-size:.82rem; transition:all .18s; }
+.btn-sec:hover { background:rgba(255,255,255,.04); color:var(--text); }
 
-    .poem-thumb {
-      width: 100%;
-      aspect-ratio: 3/4;
-      object-fit: cover;
-      display: block;
-      background: var(--bg-2);
-    }
+/* ══════════════════════════════════════════════════════
+   GESTOR DE POEMAS (Fase 5)
+══════════════════════════════════════════════════════ */
+#modal-gestor {
+  position:fixed; inset:0; z-index:900;
+  background:rgba(0,0,0,.65); backdrop-filter:blur(4px);
+  display:flex; align-items:center; justify-content:center;
+  padding:20px; opacity:0; pointer-events:none; transition:opacity .3s;
+}
+#modal-gestor.open { opacity:1; pointer-events:all; }
+#modal-gestor-inner {
+  background:var(--surface); border-radius:var(--radius-lg);
+  border:1px solid var(--border); box-shadow:var(--shadow);
+  width:100%; max-width:460px; max-height:82vh;
+  display:flex; flex-direction:column;
+  transform:scale(.96) translateY(10px);
+  transition:transform .35s cubic-bezier(.34,1.1,.64,1);
+}
+#modal-gestor.open #modal-gestor-inner { transform:scale(1) translateY(0); }
+.gestor-header   { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border); }
+.gestor-titulo   { font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--text); }
+.gestor-close    { background:none; border:none; color:var(--text-2); font-size:1.1rem; cursor:pointer; padding:4px; }
+.gestor-lista    { flex:1; overflow-y:auto; padding:4px 0; min-height:0; }
+.gestor-lista::-webkit-scrollbar { width:3px; }
+.gestor-lista::-webkit-scrollbar-thumb { background:var(--muted); border-radius:2px; }
+.gestor-fila     { display:flex; align-items:center; gap:8px; padding:9px 14px; border-bottom:1px solid rgba(200,185,230,.05); transition:background .15s; }
+.gestor-fila:hover { background:rgba(255,255,255,.03); }
+.gestor-fila-titulo { flex:1; font-size:.84rem; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.gestor-fila-fecha  { font-size:.65rem; color:var(--muted); font-style:italic; flex-shrink:0; }
+.gestor-btn-ord  { background:none; border:1px solid var(--border); border-radius:6px; width:26px; height:26px; color:var(--text-2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:.75rem; transition:all .15s; flex-shrink:0; }
+.gestor-btn-ord:hover    { background:var(--surface-2); color:var(--text); }
+.gestor-btn-ord:disabled { opacity:.2; cursor:default; }
+.gestor-vis-btn  { background:none; border:1.5px solid var(--border); border-radius:20px; padding:3px 10px; font-size:.7rem; color:var(--text-2); cursor:pointer; transition:all .18s; flex-shrink:0; white-space:nowrap; }
+.gestor-vis-btn:hover  { border-color:var(--accent); color:var(--accent); }
+.gestor-vis-btn.oculto { color:var(--muted); border-color:rgba(200,185,230,.08); }
+.gestor-footer   { display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--border); }
+.gestor-footer .btn-sec { flex:1; text-align:center; }
+.btn-danger { border-color:rgba(224,112,112,.3); color:var(--danger); }
+.btn-danger:hover { background:rgba(224,112,112,.08); color:var(--danger); }
 
-    /* placeholder cuando no hay miniatura */
-    .poem-thumb-placeholder {
-      width: 100%;
-      aspect-ratio: 3/4;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.4rem;
-      background: linear-gradient(160deg, var(--surface-2) 0%, var(--bg-2) 100%);
-      position: relative;
-      overflow: hidden;
-    }
-    .poem-thumb-placeholder::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        -45deg,
-        transparent,
-        transparent 18px,
-        rgba(200,185,230,0.03) 18px,
-        rgba(200,185,230,0.03) 19px
-      );
-    }
-    .poem-thumb-placeholder .placeholder-icon {
-      font-size: 2.2rem;
-      opacity: 0.35;
-      z-index: 1;
-    }
+/* ══════════════════════════════════════════════════════
+   CAMBIAR CONTRASEÑA — pantalla
+══════════════════════════════════════════════════════ */
+#screen-cambiar-pwd {
+  justify-content:center; align-items:center; padding:24px;
+  background:radial-gradient(ellipse 70% 55% at 50% 120%,rgba(180,120,200,.14) 0%,transparent 70%),var(--bg);
+}
 
-    .poem-info {
-      padding: 10px 12px 12px;
-    }
-    .poem-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 0.92rem;
-      font-weight: 400;
-      color: var(--text);
-      line-height: 1.35;
-      margin-bottom: 4px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .poem-date {
-      font-size: 0.68rem;
-      color: var(--muted);
-      font-style: italic;
-    }
-
-    /* Badge "nuevo" — aparece si el poema es reciente */
-    .poem-badge-new {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: var(--accent);
-      color: #1a1010;
-      font-size: 0.6rem;
-      font-weight: 500;
-      letter-spacing: 0.06em;
-      padding: 2px 7px;
-      border-radius: 20px;
-      text-transform: uppercase;
-    }
-
-    /* Spinner genérico */
-    .spinner {
-      width: 22px;
-      height: 22px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      display: inline-block;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Loading overlay */
-    .loading-overlay {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      padding: 60px 20px;
-      color: var(--text-2);
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-    }
-
-    /* ═══════════════════════════════════════════
-       TOAST
-    ═══════════════════════════════════════════ */
-    #toast {
-      position: fixed;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 10px 22px;
-      font-size: 0.82rem;
-      color: var(--text);
-      box-shadow: var(--shadow);
-      z-index: 9999;
-      transition: transform 0.32s cubic-bezier(0.34,1.3,0.64,1), opacity 0.32s;
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-    }
-    #toast.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
-
-    /* ═══════════════════════════════════════════
-       MENÚ LOGOUT (bottom sheet)
-    ═══════════════════════════════════════════ */
-    .bottom-sheet-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-      z-index: 800;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.28s;
-      backdrop-filter: blur(3px);
-    }
-    .bottom-sheet-overlay.open { opacity: 1; pointer-events: all; }
-
-    .bottom-sheet {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--surface);
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-      border-top: 1px solid var(--border);
-      padding: 16px 0 calc(env(safe-area-inset-bottom) + 16px);
-      z-index: 801;
-      transform: translateY(100%);
-      transition: transform 0.32s cubic-bezier(0.34,1.1,0.64,1);
-    }
-    .bottom-sheet-overlay.open .bottom-sheet { transform: translateY(0); }
-
-    .sheet-handle {
-      width: 38px;
-      height: 4px;
-      background: var(--muted);
-      border-radius: 2px;
-      margin: 0 auto 20px;
-      opacity: 0.4;
-    }
-    .sheet-user-info {
-      padding: 0 24px 16px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 8px;
-    }
-    .sheet-user-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.25rem;
-      font-weight: 400;
-      color: var(--text);
-    }
-    .sheet-user-login {
-      font-size: 0.78rem;
-      color: var(--text-2);
-    }
-    .sheet-btn {
-      width: 100%;
-      padding: 15px 24px;
-      background: none;
-      border: none;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.9rem;
-      text-align: left;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: background 0.18s;
-    }
-    .sheet-btn:hover  { background: rgba(255,255,255,0.04); }
-    .sheet-btn:active { background: rgba(255,255,255,0.08); }
-    .sheet-btn.danger { color: var(--danger); }
-    .sheet-btn .sheet-btn-icon { font-size: 1.1rem; width: 24px; text-align: center; }
-
-    /* ═══════════════════════════════════════════
-       SCROLLBAR
-    ═══════════════════════════════════════════ */
-    .gallery-body::-webkit-scrollbar { width: 4px; }
-    .gallery-body::-webkit-scrollbar-track { background: transparent; }
-    .gallery-body::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
-
-    /* ── Social: reacciones y comentarios ──────────────────── */
-    .emoji-btn {
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: 20px;
-      padding: 4px 10px;
-      font-size: 1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      color: var(--text-2);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.8rem;
-      transition: all 0.18s;
-      white-space: nowrap;
-    }
-    .emoji-btn:hover  { border-color: var(--accent); color: var(--text); }
-    .emoji-btn:active { transform: scale(0.93); }
-    .emoji-btn.activo {
-      background: rgba(212,165,116,0.18);
-      border-color: var(--accent);
-      color: var(--accent);
-      font-weight: 500;
-    }
-    .emoji-btn .cnt { font-size: 0.75rem; }
-
-    .comentario-item {
-      display: flex;
-      gap: 8px;
-      animation: cardSlideIn 0.3s ease both;
-    }
-    .comentario-avatar {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #1a1010;
-      flex-shrink: 0;
-    }
-    .comentario-burbuja {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 0 12px 12px 12px;
-      padding: 7px 12px;
-      flex: 1;
-    }
-    .comentario-nombre {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--accent);
-      margin-bottom: 2px;
-    }
-    .comentario-texto {
-      font-size: 0.85rem;
-      color: var(--text);
-      line-height: 1.4;
-      word-break: break-word;
-    }
-    .comentario-fecha {
-      font-size: 0.68rem;
-      color: var(--muted);
-      margin-top: 3px;
-      font-style: italic;
-    }
-    .social-loading {
-      text-align: center;
-      font-size: 0.78rem;
-      color: var(--muted);
-      font-style: italic;
-      padding: 12px;
-      font-family: 'Cormorant Garamond', serif;
-    }
-    #inp-comentario:focus {
-      border-color: rgba(212,165,116,0.5);
-      box-shadow: 0 0 0 3px rgba(212,165,116,0.1);
-    }
-    #lista-comentarios::-webkit-scrollbar { width: 3px; }
-    #lista-comentarios::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
-
-    /* ── Visor de poema fullscreen ──────────────────────────── */
-    #visor-overlay:not(.hidden) { display: flex !important; }
-
-    /* ── Utilidad de visibilidad ─────────────────────────── */
-    /* Para elementos no-screen: display:none cuando tienen clase hidden */
-    .hidden { display: none !important; }
-    /* Screens usan transición de opacidad — conservar display:block */
-    .screen.hidden { display: block !important; opacity: 0; pointer-events: none; transform: translateY(14px); }
-  </style>
+/* ══════════════════════════════════════════════════════
+   UTILIDAD: hidden
+══════════════════════════════════════════════════════ */
+.hidden { display:none !important; }
+.screen.hidden { display:block !important; opacity:0; pointer-events:none; transform:translateY(14px); }
+</style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════
-     PANTALLA: LOGIN
-══════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════
+     LOGIN
+════════════════════════════════════════════════ -->
 <section id="screen-login" class="screen">
   <div class="login-card">
     <div class="login-logo">
@@ -658,7 +357,6 @@
       <h1>Poemenizador</h1>
       <p>Da Vinci — tu galería privada</p>
     </div>
-
     <div class="field">
       <label for="inp-usuario">Usuario</label>
       <input id="inp-usuario" type="text" autocomplete="username"
@@ -666,59 +364,42 @@
     </div>
     <div class="field">
       <label for="inp-pwd">Contraseña</label>
-      <input id="inp-pwd" type="password" autocomplete="current-password"
-             placeholder="••••••••">
+      <input id="inp-pwd" type="password" autocomplete="current-password" placeholder="••••••••">
     </div>
-
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
       <input type="checkbox" id="chk-recordar" style="accent-color:var(--accent);width:15px;height:15px;">
-      <label for="chk-recordar" style="font-size:0.78rem;color:var(--text-2);cursor:pointer;">
+      <label for="chk-recordar" style="font-size:.78rem;color:var(--text-2);cursor:pointer;">
         Recordar mis credenciales en este dispositivo
       </label>
     </div>
     <button id="btn-login" class="btn-primary" onclick="App.login()">Entrar</button>
-
-    <div id="login-error"  class="login-error"></div>
-    <div id="login-spinner" class="login-spinner">
-      <span class="spinner"></span> Verificando…
-    </div>
+    <div id="login-error"   class="login-error"></div>
+    <div id="login-spinner" class="login-spinner"><span class="spinner"></span> Verificando…</div>
   </div>
 </section>
 
 
-<!-- ══════════════════════════════════════════════
-     PANTALLA: GALERÍA
-══════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════
+     GALERÍA
+════════════════════════════════════════════════ -->
 <section id="screen-galeria" class="screen hidden">
-
-  <!-- Header -->
   <header class="gallery-header">
-    <div class="gallery-header-left">
-      <span class="gallery-logo-small">🕊️</span>
-      <div>
-        <div class="gallery-title">Mis poemas</div>
-        <div class="gallery-subtitle" id="gallery-subtitle">cargando…</div>
-      </div>
+    <span class="gallery-logo-small">🕊️</span>
+    <div class="gallery-header-info">
+      <div class="gallery-title" id="gallery-title-text">Mis poemas</div>
+      <div class="gallery-subtitle" id="gallery-subtitle">cargando…</div>
     </div>
     <button class="btn-icon" onclick="App.abrirMenu()" title="Menú">
       <span id="gallery-user-initial">?</span>
     </button>
   </header>
 
-  <!-- Barra de usuario -->
-  <div class="gallery-user-bar" id="gallery-user-bar">
-    <span>✨</span>
-    <span id="gallery-welcome">Bienvenida</span>
-  </div>
-
-  <!-- Cuerpo scrollable -->
   <div class="gallery-body" id="gallery-body">
     <div class="loading-overlay" id="gallery-loading">
-      <span class="spinner"></span>
-      <span>Cargando tus poemas…</span>
+      <span class="spinner"></span><span>Cargando tus poemas…</span>
     </div>
     <div id="gallery-content" class="hidden">
-      <p class="ptr-hint">↑ Desliza hacia abajo para actualizar</p>
+      <p class="ptr-hint">↑ Desliza hacia arriba para actualizar</p>
       <div class="poems-grid" id="poems-grid"></div>
     </div>
     <div class="gallery-empty hidden" id="gallery-empty">
@@ -729,18 +410,24 @@
 </section>
 
 
-<!-- ══════════════════════════════════════════════
+<!-- ════════════════════════════════════════════════
      MENÚ (bottom sheet)
-══════════════════════════════════════════════ -->
+════════════════════════════════════════════════ -->
 <div class="bottom-sheet-overlay" id="sheet-overlay" onclick="App.cerrarMenu()">
   <div class="bottom-sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-user-info">
-      <div class="sheet-user-name" id="sheet-nombre">—</div>
+      <div class="sheet-user-name"  id="sheet-nombre">—</div>
       <div class="sheet-user-login" id="sheet-usuario">—</div>
     </div>
     <button class="sheet-btn" onclick="App.refrescar(); App.cerrarMenu();">
       <span class="sheet-btn-icon">🔄</span> Actualizar galería
+    </button>
+    <button class="sheet-btn" onclick="App.abrirTemas()">
+      <span class="sheet-btn-icon">🎨</span> Cambiar tema
+    </button>
+    <button class="sheet-btn" onclick="App.abrirGestor()">
+      <span class="sheet-btn-icon">📋</span> Gestionar mis poemas
     </button>
     <button class="sheet-btn" onclick="App.abrirCambiarPwd()">
       <span class="sheet-btn-icon">🔑</span> Cambiar contraseña
@@ -752,170 +439,317 @@
 </div>
 
 
-<!-- PANTALLA: CAMBIAR CONTRASEÑA -->
+<!-- ════════════════════════════════════════════════
+     CAMBIAR CONTRASEÑA
+════════════════════════════════════════════════ -->
 <section id="screen-cambiar-pwd" class="screen hidden">
-  <div style="display:flex;flex-direction:column;height:100%;
-    background:radial-gradient(ellipse 70% 55% at 50% 120%,rgba(180,120,200,0.14) 0%,transparent 70%),var(--bg);
-    justify-content:center;align-items:center;padding:24px;">
-
-    <div style="width:100%;max-width:360px;background:var(--surface);
-      border:1px solid var(--border);border-radius:var(--radius-lg);
-      padding:36px 32px 28px;box-shadow:var(--shadow);">
-
-      <div style="text-align:center;margin-bottom:28px;">
-        <span style="font-size:2.2rem;filter:drop-shadow(0 0 10px rgba(212,165,116,0.4))">🔑</span>
-        <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;
-          font-weight:400;color:var(--text);margin-top:8px;">Cambiar contraseña</h2>
-        <p style="font-size:0.78rem;color:var(--text-2);font-style:italic;
-          font-family:'Cormorant Garamond',serif;margin-top:4px;" id="pwd-usuario-label"></p>
-      </div>
-
-      <div class="field">
-        <label for="inp-pwd-actual">Contraseña actual</label>
-        <input id="inp-pwd-actual" type="password" autocomplete="current-password"
-               placeholder="••••••••">
-      </div>
-      <div class="field">
-        <label for="inp-pwd-nueva">Nueva contraseña</label>
-        <input id="inp-pwd-nueva" type="password" autocomplete="new-password"
-               placeholder="••••••••">
-      </div>
-      <div class="field">
-        <label for="inp-pwd-confirmar">Confirmar nueva contraseña</label>
-        <input id="inp-pwd-confirmar" type="password" autocomplete="new-password"
-               placeholder="••••••••">
-      </div>
-
-      <button class="btn-primary" onclick="App.guardarNuevaPwd()" style="margin-top:4px;">
-        Guardar nueva contraseña
-      </button>
-
-      <button onclick="App.volverDesdeCambiarPwd()" style="
-        width:100%;margin-top:10px;padding:10px;
-        background:transparent;border:1px solid var(--border);
-        border-radius:10px;color:var(--text-2);cursor:pointer;
-        font-family:'DM Sans',sans-serif;font-size:0.85rem;">
-        ← Volver
-      </button>
-
-      <div id="pwd-error"  class="login-error"  style="margin-top:12px;"></div>
-      <div id="pwd-ok" style="display:none;margin-top:12px;padding:10px 14px;
-        background:rgba(126,200,160,0.12);border:1px solid rgba(126,200,160,0.3);
-        border-radius:8px;font-size:0.82rem;color:var(--success);text-align:center;">
-        ✅ Contraseña actualizada correctamente
-      </div>
+  <div style="width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px 32px 28px;box-shadow:var(--shadow);">
+    <div style="text-align:center;margin-bottom:28px;">
+      <span style="font-size:2.2rem;filter:drop-shadow(0 0 10px rgba(212,165,116,.4))">🔑</span>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;color:var(--text);margin-top:8px;">Cambiar contraseña</h2>
+      <p style="font-size:.78rem;color:var(--text-2);font-style:italic;font-family:'Cormorant Garamond',serif;margin-top:4px;" id="pwd-usuario-label"></p>
     </div>
+    <div class="field"><label for="inp-pwd-actual">Contraseña actual</label>
+      <input id="inp-pwd-actual" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <div class="field"><label for="inp-pwd-nueva">Nueva contraseña</label>
+      <input id="inp-pwd-nueva" type="password" autocomplete="new-password" placeholder="••••••••"></div>
+    <div class="field"><label for="inp-pwd-confirmar">Confirmar nueva contraseña</label>
+      <input id="inp-pwd-confirmar" type="password" autocomplete="new-password" placeholder="••••••••"></div>
+    <button class="btn-primary" onclick="App.guardarNuevaPwd()" style="margin-top:4px;">Guardar nueva contraseña</button>
+    <button onclick="App.volverDesdeCambiarPwd()" style="width:100%;margin-top:10px;padding:10px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text-2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;">← Volver</button>
+    <div id="pwd-error" class="login-error" style="margin-top:12px;"></div>
+    <div id="pwd-ok" style="display:none;margin-top:12px;padding:10px 14px;background:rgba(126,200,160,.12);border:1px solid rgba(126,200,160,.3);border-radius:8px;font-size:.82rem;color:var(--success);text-align:center;">✅ Contraseña actualizada correctamente</div>
   </div>
 </section>
 
-<!-- VISOR DE POEMA (modal fullscreen) -->
-<div id="visor-overlay" class="hidden" style="
-  position:fixed;inset:0;z-index:500;
-  background:var(--bg);
-  display:flex;flex-direction:column;">
 
-  <div style="display:flex;align-items:center;gap:10px;
-    padding:10px 14px;background:var(--bg-2);
-    border-bottom:1px solid var(--border);flex-shrink:0;">
-    <button onclick="App.cerrarVisor()" style="
-      background:var(--surface);border:1px solid var(--border);
-      color:var(--text-2);border-radius:50%;width:34px;height:34px;
-      font-size:1rem;cursor:pointer;flex-shrink:0;">✕</button>
-    <span id="visor-titulo" style="
-      font-family:'Cormorant Garamond',serif;font-size:1.1rem;
-      color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-    <div id="visor-spinner" class="spinner" style="margin-left:auto;flex-shrink:0;"></div>
+<!-- ════════════════════════════════════════════════
+     VISOR DE POEMA — Layout responsivo
+════════════════════════════════════════════════ -->
+<div id="visor-overlay" class="hidden">
+
+  <!-- Header compacto con progress bar -->
+  <div id="visor-header">
+    <button id="visor-close-btn" onclick="App.cerrarVisor()">✕</button>
+    <span id="visor-titulo">Poema</span>
+    <!-- Toggle social (visible solo en móvil) -->
+    <button id="btn-toggle-social" class="btn-icon" onclick="App.toggleSocial()" title="Mostrar/ocultar comentarios">
+      💬<span id="social-badge" class="hidden"></span>
+    </button>
+    <!-- Barra de progreso -->
+    <div id="visor-progress"><div id="visor-progress-fill"></div></div>
   </div>
 
-  <iframe id="visor-frame"
-    sandbox="allow-scripts allow-same-origin"
-    style="flex:1;border:none;width:100%;background:#fff;"
-    title="Poema"></iframe>
+  <!-- Cuerpo: iframe + panel social (lado a lado en desktop) -->
+  <div id="visor-body">
+    <iframe id="visor-frame"
+      sandbox="allow-scripts allow-same-origin"
+      title="Poema"></iframe>
 
-  <!-- ── Panel reacciones + comentarios ── -->
-  <div id="panel-social" style="
-    flex-shrink:0;
-    background:var(--bg-2);
-    border-top:1px solid var(--border);
-    max-height:45vh;
-    display:flex;flex-direction:column;">
-
-    <!-- Barra de emojis -->
-    <div id="barra-emojis" style="
-      display:flex;align-items:center;gap:4px;flex-wrap:wrap;
-      padding:8px 14px;border-bottom:1px solid var(--border);">
-    </div>
-
-    <!-- Comentarios -->
-    <div id="lista-comentarios" style="
-      flex:1;overflow-y:auto;padding:8px 14px;
-      display:flex;flex-direction:column;gap:8px;">
-    </div>
-
-    <!-- Escribir comentario -->
-    <div style="
-      display:flex;gap:8px;padding:8px 14px;
-      border-top:1px solid var(--border);background:var(--surface);">
-      <input id="inp-comentario" type="text" maxlength="500"
-        placeholder="Escribe un comentario…"
-        style="flex:1;background:var(--bg-2);border:1px solid var(--border);
-               border-radius:20px;padding:8px 14px;color:var(--text);
-               font-family:'DM Sans',sans-serif;font-size:0.85rem;outline:none;">
-      <button onclick="Social.enviarComentario()" style="
-        background:var(--accent);border:none;border-radius:50%;
-        width:36px;height:36px;font-size:1rem;cursor:pointer;
-        flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-        ➤
-      </button>
+    <!-- Panel social -->
+    <div id="panel-social">
+      <div id="barra-emojis"></div>
+      <div id="lista-comentarios"></div>
+      <div id="social-input-area">
+        <input id="inp-comentario" type="text" maxlength="500" placeholder="Escribe un comentario…">
+        <button id="btn-send-comentario" onclick="Social.enviarComentario()">➤</button>
+      </div>
     </div>
   </div>
 </div>
+
+
+<!-- ════════════════════════════════════════════════
+     SELECTOR DE TEMAS (Fase 5)
+════════════════════════════════════════════════ -->
+<div id="modal-temas" onclick="App.cerrarTemas()">
+  <div id="modal-temas-inner" onclick="event.stopPropagation()">
+    <p class="tema-titulo">🎨 Elige tu tema</p>
+    <div class="tema-grid" id="tema-grid"></div>
+    <div style="text-align:center;margin-top:16px;">
+      <button class="btn-sec" onclick="App.cerrarTemas()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════
+     GESTOR DE POEMAS (Fase 5)
+════════════════════════════════════════════════ -->
+<div id="modal-gestor" onclick="App.cerrarGestor()">
+  <div id="modal-gestor-inner" onclick="event.stopPropagation()">
+    <div class="gestor-header">
+      <span class="gestor-titulo">📋 Gestionar poemas</span>
+      <button class="gestor-close" onclick="App.cerrarGestor()">✕</button>
+    </div>
+    <div class="gestor-lista" id="gestor-lista"></div>
+    <div class="gestor-footer">
+      <button class="btn-sec" id="btn-gestor-guardar" onclick="Gestor.guardar()">💾 Guardar cambios</button>
+      <button class="btn-sec" onclick="App.cerrarGestor()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- TOAST -->
 <div id="toast"></div>
 
 
-<!-- ══════════════════════════════════════════════
+<!-- ════════════════════════════════════════════════
      JAVASCRIPT
-══════════════════════════════════════════════ -->
+════════════════════════════════════════════════ -->
 <script>
 "use strict";
 
-// ─── CONFIGURACIÓN ──────────────────────────────────────────────────
-// 👉 CAMBIA ESTA URL por la de tu despliegue de GAS v6.0
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyjMSGvjr5s2ZS1bTXkHqS5HrSpjMukv01O8cREw2T8zhL0VhWk1nLo5OHn6tho7Esb/exec";
+// ── CONFIGURACIÓN — cambia esta URL por la de tu GAS ──────────────
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwUlR--ITGCEsbS2DfWUGC5u1xOKtWE6T02i3s2nXFK4XwnFxXsOBrtvP67SDFRfrkO/exec";
 
-// ─── HASH SHA-256 (igual al que usa el HTML del sobre) ──────────────
+// ══════════════════════════════════════════════════════════════════
+//  TEMAS (Fase 5) — 5 paletas de color
+// ══════════════════════════════════════════════════════════════════
+const TEMAS = {
+  nocturno: {
+    nombre:"Nocturno", emoji:"🌙",
+    vars:{"--bg":"#0d0b14","--bg-2":"#13101e","--surface":"#1a1628","--surface-2":"#221d32",
+          "--border":"rgba(200,185,230,0.10)","--accent":"#d4a574","--accent-2":"#c4a0c0",
+          "--accent-glow":"rgba(212,165,116,0.18)"}
+  },
+  rosa: {
+    nombre:"Rosa", emoji:"🌹",
+    vars:{"--bg":"#110a0d","--bg-2":"#1a0e12","--surface":"#221318","--surface-2":"#2c1820",
+          "--border":"rgba(230,185,200,0.10)","--accent":"#e8a0b4","--accent-2":"#d47090",
+          "--accent-glow":"rgba(232,160,180,0.18)"}
+  },
+  oceano: {
+    nombre:"Océano", emoji:"🌊",
+    vars:{"--bg":"#080e1a","--bg-2":"#0d1424","--surface":"#121e30","--surface-2":"#19273c",
+          "--border":"rgba(130,180,230,0.12)","--accent":"#74b8d4","--accent-2":"#90c4e8",
+          "--accent-glow":"rgba(116,184,212,0.18)"}
+  },
+  bosque: {
+    nombre:"Bosque", emoji:"🌿",
+    vars:{"--bg":"#090f0c","--bg-2":"#0e1610","--surface":"#131e16","--surface-2":"#1a2820",
+          "--border":"rgba(130,200,160,0.12)","--accent":"#7ec8a0","--accent-2":"#a0d4b0",
+          "--accent-glow":"rgba(126,200,160,0.18)"}
+  },
+  cristal: {
+    nombre:"Cristal", emoji:"✨",
+    vars:{"--bg":"#0a0a0c","--bg-2":"#111116","--surface":"#18181e","--surface-2":"#222228",
+          "--border":"rgba(220,215,240,0.12)","--accent":"#b8b4d8","--accent-2":"#a8a4c8",
+          "--accent-glow":"rgba(184,180,216,0.16)"}
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  CACHÉ LOCAL DE POEMAS — IndexedDB (24h TTL)
+//  Permite abrir el poema al instante en la segunda visita
+// ══════════════════════════════════════════════════════════════════
+const PoemCache = {
+  _db  : null,
+  _TTL : 24 * 60 * 60 * 1000,  // 24 horas en milisegundos
+
+  // Abre (o crea) la base de datos IndexedDB
+  async _abrir() {
+    if (this._db) return this._db;
+    return new Promise((ok, err) => {
+      const req = indexedDB.open("poemenizador_cache_v1", 1);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains("poems"))
+          db.createObjectStore("poems", { keyPath: "id" });
+      };
+      req.onsuccess = e => { this._db = e.target.result; ok(this._db); };
+      req.onerror   = () => err(req.error);
+    });
+  },
+
+  // Devuelve el HTML en caché si existe y no está expirado; null si no
+  async get(poemId) {
+    try {
+      const db   = await this._abrir();
+      const data = await new Promise(res => {
+        const req = db.transaction("poems","readonly").objectStore("poems").get(poemId);
+        req.onsuccess = () => res(req.result);
+        req.onerror   = () => res(null);
+      });
+      if (!data) return null;
+      if (Date.now() - data.ts > this._TTL) return null;  // expirado
+      return data.html;
+    } catch { return null; }
+  },
+
+  // Guarda / actualiza el HTML en caché
+  async set(poemId, html) {
+    try {
+      const db = await this._abrir();
+      await new Promise(res => {
+        const tx = db.transaction("poems","readwrite");
+        tx.objectStore("poems").put({ id:poemId, html, ts:Date.now() });
+        tx.oncomplete = res; tx.onerror = res;
+      });
+    } catch { /* falla silenciosa — la caché es opcional */ }
+  },
+
+  // Borra toda la caché (al cerrar sesión)
+  async limpiar() {
+    try {
+      const db = await this._abrir();
+      const tx = db.transaction("poems","readwrite");
+      tx.objectStore("poems").clear();
+    } catch { }
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  CACHÉ SOCIAL — en memoria, dura la sesión (5 min TTL)
+//  Al re-abrir el mismo poema, reacciones y comentarios aparecen YA
+// ══════════════════════════════════════════════════════════════════
+const SocialCache = {
+  _map: new Map(),    // poemId → { conteos, miEmoji, comentarios, ts }
+  _TTL: 5 * 60 * 1000,
+
+  get(poemId) {
+    const d = this._map.get(poemId);
+    if (!d || Date.now() - d.ts > this._TTL) return null;
+    return d;
+  },
+  set(poemId, conteos, miEmoji, comentarios) {
+    this._map.set(poemId, { conteos:{...conteos}, miEmoji, comentarios:[...comentarios], ts:Date.now() });
+  },
+  actualizarReacciones(poemId, conteos, miEmoji) {
+    const d = this._map.get(poemId);
+    if (d) { d.conteos = {...conteos}; d.miEmoji = miEmoji; d.ts = Date.now(); }
+  },
+  agregarComentario(poemId, c) {
+    const d = this._map.get(poemId);
+    if (d) d.comentarios.push(c);
+  },
+  limpiar() { this._map.clear(); }
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  BARRA DE PROGRESO — línea animada en el header del visor
+// ══════════════════════════════════════════════════════════════════
+const Progress = {
+  _fill : null,
+  _timer: null,
+  _pct  : 0,
+
+  init() { this._fill = document.getElementById("visor-progress-fill"); },
+
+  start() {
+    if (!this._fill) return;
+    clearTimeout(this._timer);
+    this._pct = 0;
+    this._fill.style.transition = "none";
+    this._fill.style.width   = "0%";
+    this._fill.style.opacity = "1";
+    // Esperar un frame para que el reset sea visible antes de animar
+    requestAnimationFrame(() => {
+      this._fill.style.transition = "width .55s cubic-bezier(.1,.8,.2,1), opacity .4s";
+      this._avanzar();
+    });
+  },
+
+  _avanzar() {
+    if (this._pct >= 85) return;
+    const salto = Math.random() * 18 + 6;      // saltos aleatorios de 6–24%
+    this._pct   = Math.min(85, this._pct + salto);
+    this._fill.style.width = this._pct + "%";
+    const delay = 280 + Math.random() * 380;   // cada 280–660 ms
+    this._timer = setTimeout(() => this._avanzar(), delay);
+  },
+
+  complete() {
+    clearTimeout(this._timer);
+    this._fill.style.background = "";  // restaurar color original
+    this._fill.style.width = "100%";
+    setTimeout(() => {
+      this._fill.style.opacity = "0";
+      setTimeout(() => { this._fill.style.width = "0%"; }, 420);
+    }, 300);
+  },
+
+  error() {
+    clearTimeout(this._timer);
+    this._fill.style.background = "var(--danger)";
+    this._fill.style.width = "100%";
+    setTimeout(() => {
+      this._fill.style.opacity = "0";
+      setTimeout(() => {
+        this._fill.style.width   = "0%";
+        this._fill.style.background = "";
+      }, 420);
+    }, 700);
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  UTILIDADES BASE
+// ══════════════════════════════════════════════════════════════════
 async function hashPwd(pwd) {
   const enc = new TextEncoder().encode(pwd);
   const buf = await crypto.subtle.digest("SHA-256", enc);
-  return Array.from(new Uint8Array(buf))
-    .map(b => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
 }
 
-// ─── LLAMADA AL GAS ─────────────────────────────────────────────────
 async function gasPost(payload, timeoutMs = 30000) {
   const ctrl = new AbortController();
   const tid  = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const resp = await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify(payload),
-      signal: ctrl.signal
+      method:"POST", headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify(payload), signal:ctrl.signal
     });
-    if (!resp.ok) throw new Error("Error HTTP " + resp.status);
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
     return resp.json();
-  } finally {
-    clearTimeout(tid);
-  }
+  } finally { clearTimeout(tid); }
 }
 
-// ─── UTILIDADES ─────────────────────────────────────────────────────
-function el(id)          { return document.getElementById(id); }
-function show(id)        { el(id).classList.remove("hidden"); }
-function hide(id)        { el(id).classList.add("hidden"); }
-function showScreen(id)  {
+function el(id) { return document.getElementById(id); }
+function show(id) { el(id).classList.remove("hidden"); }
+function hide(id) { el(id).classList.add("hidden"); }
+function showScreen(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
   el(id).classList.remove("hidden");
 }
@@ -923,90 +757,88 @@ function showScreen(id)  {
 let _toastTimer;
 function toast(msg, dur = 2800) {
   const t = el("toast");
-  t.textContent = msg;
-  t.classList.add("show");
+  t.textContent = msg; t.classList.add("show");
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => t.classList.remove("show"), dur);
 }
 
 function formatearFecha(str) {
   if (!str) return "";
-  // Formato colombiano dd/mm/aaaa hh:mm:ss → extraer solo la fecha
-  const match = str.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-  if (!match) return str;
-  const meses = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-  return `${parseInt(match[1])} ${meses[parseInt(match[2])-1]} ${match[3]}`;
+  const m = str.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (!m) return str;
+  const mes = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  return `${parseInt(m[1])} ${mes[parseInt(m[2])-1]} ${m[3]}`;
 }
-
 function esReciente(fechaStr, diasMax = 7) {
   if (!fechaStr) return false;
-  const match = fechaStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-  if (!match) return false;
-  const fecha = new Date(parseInt(match[3]), parseInt(match[2])-1, parseInt(match[1]));
-  return (Date.now() - fecha.getTime()) < diasMax * 86_400_000;
+  const m = fechaStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (!m) return false;
+  return (Date.now() - new Date(+m[3], +m[2]-1, +m[1]).getTime()) < diasMax * 86_400_000;
+}
+function _esc(s) {
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-// ─── ESTADO DE LA APP ───────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+//  ESTADO
+// ══════════════════════════════════════════════════════════════════
 const State = {
   token    : localStorage.getItem("pwa_token")    || "",
   sesionId : localStorage.getItem("pwa_sesion_id")|| "",
   nombre   : localStorage.getItem("pwa_nombre")   || "",
   usuario  : localStorage.getItem("pwa_usuario")  || "",
-  pwdHash  : localStorage.getItem("pwa_pwd_hash") || "",  // solo si el usuario eligió recordar
+  pwdHash  : localStorage.getItem("pwa_pwd_hash") || "",
+  tema     : localStorage.getItem("pwa_tema")     || "nocturno",
 
   guardar(recordar = false) {
     localStorage.setItem("pwa_token",     this.token);
     localStorage.setItem("pwa_sesion_id", this.sesionId);
     localStorage.setItem("pwa_nombre",    this.nombre);
     localStorage.setItem("pwa_usuario",   this.usuario);
+    localStorage.setItem("pwa_tema",      this.tema);
     if (recordar) {
       localStorage.setItem("pwa_pwd_hash", this.pwdHash);
       localStorage.setItem("pwa_recordar", "1");
     }
   },
   limpiar() {
-    // Conservar credenciales guardadas si el usuario eligió recordarlas
     const recordar = localStorage.getItem("pwa_recordar") === "1";
-    const claves = ["pwa_token","pwa_sesion_id","pwa_nombre"];
-    if (!recordar) claves.push("pwa_usuario","pwa_pwd_hash","pwa_recordar");
-    claves.forEach(k => localStorage.removeItem(k));
+    ["pwa_token","pwa_sesion_id","pwa_nombre"].forEach(k => localStorage.removeItem(k));
+    if (!recordar) ["pwa_usuario","pwa_pwd_hash","pwa_recordar"].forEach(k => localStorage.removeItem(k));
     this.token = this.sesionId = this.nombre = "";
     if (!recordar) { this.usuario = ""; this.pwdHash = ""; }
   },
   tieneCredenciales() {
-    return !!(localStorage.getItem("pwa_recordar") === "1"
-           && localStorage.getItem("pwa_usuario")
-           && localStorage.getItem("pwa_pwd_hash"));
+    return localStorage.getItem("pwa_recordar")==="1"
+        && !!localStorage.getItem("pwa_usuario")
+        && !!localStorage.getItem("pwa_pwd_hash");
   }
 };
 
-// ─── APP ─────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+//  APP
+// ══════════════════════════════════════════════════════════════════
 const App = {
+  _socialVisible : true,   // estado del panel social en móvil
+  _poemas        : [],     // lista en memoria (para el gestor)
 
   async init() {
-    // Registrar SW si es posible
-    if ("serviceWorker" in navigator) {
-      try {
-        await navigator.serviceWorker.register("sw.js");
-      } catch(_) { /* no bloqueante */ }
-    }
+    Progress.init();
 
-    // Inyectar manifest dinámicamente
+    // Service Worker
+    if ("serviceWorker" in navigator) {
+      try { await navigator.serviceWorker.register("sw.js"); } catch(_) {}
+    }
     _inyectarManifest();
 
-    // Enter en campos
-    el("inp-pwd").addEventListener("keydown", e => {
-      if (e.key === "Enter") this.login();
-    });
-    el("inp-comentario").addEventListener("keydown", e => {
-      if (e.key === "Enter") Social.enviarComentario();
-    });
-    el("inp-pwd-confirmar").addEventListener("keydown", e => {
-      if (e.key === "Enter") App.guardarNuevaPwd();
-    });
-    el("inp-usuario").addEventListener("keydown", e => {
-      if (e.key === "Enter") el("inp-pwd").focus();
-    });
+    // Aplicar tema guardado (sin guardar de nuevo)
+    this.aplicarTema(State.tema, false);
+
+    // Listeners de teclado
+    el("inp-pwd").addEventListener("keydown", e => { if(e.key==="Enter") this.login(); });
+    el("inp-comentario").addEventListener("keydown", e => { if(e.key==="Enter") Social.enviarComentario(); });
+    el("inp-pwd-confirmar").addEventListener("keydown", e => { if(e.key==="Enter") this.guardarNuevaPwd(); });
+    el("inp-usuario").addEventListener("keydown", e => { if(e.key==="Enter") el("inp-pwd").focus(); });
 
     // Pre-rellenar si hay credenciales guardadas
     if (State.tieneCredenciales()) {
@@ -1014,121 +846,80 @@ const App = {
       if (!el("inp-usuario").value) el("inp-usuario").value = State.usuario;
     }
 
-    // Auto-login si hay token guardado
-    if (State.token && State.sesionId) {
-      await this.validarSesion();
-    } else {
-      showScreen("screen-login");
-    }
+    // Auto-login
+    if (State.token && State.sesionId) await this.validarSesion();
+    else showScreen("screen-login");
   },
 
   async validarSesion() {
     try {
-      const res = await gasPost({ action: "pwa_validar_token", token: State.token });
+      const res = await gasPost({ action:"pwa_validar_token", token:State.token });
       if (res.valido) {
-        // Actualizar sesion_id por si cambió
         if (res.sesion_id) { State.sesionId = res.sesion_id; State.guardar(); }
         this.mostrarGaleria();
-      } else {
-        State.limpiar();
-        showScreen("screen-login");
-      }
+      } else { State.limpiar(); showScreen("screen-login"); }
     } catch(_) {
-      // Sin red — ir a galería si hay token (modo offline)
-      if (State.token) { this.mostrarGaleria(); }
-      else             { showScreen("screen-login"); }
+      // Sin red → entrar en modo offline si hay token
+      State.token ? this.mostrarGaleria() : showScreen("screen-login");
     }
   },
 
   async login() {
     const usuario = el("inp-usuario").value.trim();
     const pwd     = el("inp-pwd").value;
+    if (!usuario || !pwd) { this._mostrarError("Introduce tu usuario y contraseña."); return; }
 
-    if (!usuario || !pwd) { this.mostrarError("Introduce tu usuario y contraseña."); return; }
-
-    el("btn-login").disabled  = true;
+    el("btn-login").disabled = true;
     el("login-error").classList.remove("visible");
     el("login-spinner").classList.add("visible");
 
     try {
       const pwdHash = await hashPwd(pwd);
-      const res = await gasPost({ action: "pwa_login", usuario, pwd_hash: pwdHash });
-
+      const res = await gasPost({ action:"pwa_login", usuario, pwd_hash:pwdHash });
       if (res.ok) {
-        const recordar  = el("chk-recordar").checked;
-        State.token    = res.token;
-        State.sesionId = res.sesion_id;
-        State.nombre   = res.nombre;
-        State.usuario  = usuario;
-        State.pwdHash  = pwdHash;
+        const recordar = el("chk-recordar").checked;
+        Object.assign(State, { token:res.token, sesionId:res.sesion_id, nombre:res.nombre, usuario, pwdHash });
         State.guardar(recordar);
         this.mostrarGaleria();
       } else {
-        this.mostrarError(_mensajeError(res.error));
+        this._mostrarError(_mensajeError(res.error));
       }
-    } catch(e) {
-      this.mostrarError("No se pudo conectar. Comprueba tu conexión.");
-    } finally {
-      el("btn-login").disabled = false;
-      el("login-spinner").classList.remove("visible");
-    }
+    } catch { this._mostrarError("No se pudo conectar. Comprueba tu conexión."); }
+    finally  { el("btn-login").disabled = false; el("login-spinner").classList.remove("visible"); }
   },
 
-  mostrarError(msg) {
-    const err = el("login-error");
-    err.textContent = msg;
-    err.classList.add("visible");
+  _mostrarError(msg) {
+    const e = el("login-error"); e.textContent = msg; e.classList.add("visible");
   },
 
   mostrarGaleria() {
-    el("gallery-welcome").textContent = "Hola, " + (State.nombre || State.usuario) + " 💛";
-    el("gallery-subtitle").textContent = "tu galería privada";
-    el("gallery-user-initial").textContent =
-      (State.nombre || State.usuario).charAt(0).toUpperCase();
-    el("sheet-nombre").textContent  = State.nombre  || State.usuario;
+    const nombre = State.nombre || State.usuario;
+    el("gallery-title-text").textContent = "Hola, " + nombre + " 💛";
+    el("gallery-subtitle").textContent   = "tu galería privada";
+    el("gallery-user-initial").textContent = nombre.charAt(0).toUpperCase();
+    el("sheet-nombre").textContent  = State.nombre || State.usuario;
     el("sheet-usuario").textContent = "@" + State.usuario;
-
     showScreen("screen-galeria");
     this.cargarPoemas();
   },
 
   async cargarPoemas() {
-    show("gallery-loading");
-    hide("gallery-content");
-    hide("gallery-empty");
-
+    show("gallery-loading"); hide("gallery-content"); hide("gallery-empty");
     try {
-      const res = await gasPost({
-        action    : "pwa_listar_poemas",
-        sesion_id : State.sesionId,
-        pwa_token : State.token
-      });
-
+      const res = await gasPost({ action:"pwa_listar_poemas", sesion_id:State.sesionId, pwa_token:State.token });
       hide("gallery-loading");
-
       if (!res.ok || !res.poemas) {
-        const msg = res.error === "acceso_denegado"
-          ? "Sesión no verificada. Vuelve a iniciar sesión."
-          : (res.error || "Error al cargar poemas.");
+        const msg = res.error==="acceso_denegado" ? "Sesión no verificada." : (res.error||"Error al cargar poemas.");
         el("gallery-empty").querySelector("p").textContent = "⚠️ " + msg;
-        show("gallery-empty");
-        return;
+        show("gallery-empty"); return;
       }
-
-      if (res.poemas.length === 0) {
-        show("gallery-empty");
-      } else {
-        this.renderPoemas(res.poemas);
-        show("gallery-content");
-      }
-
-      el("gallery-subtitle").textContent =
-        res.poemas.length + (res.poemas.length === 1 ? " poema" : " poemas");
-
+      this._poemas = res.poemas;
+      if (!res.poemas.length) { show("gallery-empty"); }
+      else { this.renderPoemas(res.poemas); show("gallery-content"); }
+      el("gallery-subtitle").textContent = res.poemas.length + (res.poemas.length===1?" poema":" poemas");
     } catch(e) {
       hide("gallery-loading");
-      const esMsgAbort = e.name === "AbortError";
-      const msg = esMsgAbort ? "La petición tardó demasiado. Comprueba tu conexión." : "Sin conexión.";
+      const msg = e.name==="AbortError" ? "La petición tardó demasiado." : "Sin conexión.";
       toast(msg);
       el("gallery-empty").querySelector("p").textContent = "⚠️ " + msg;
       show("gallery-empty");
@@ -1138,23 +929,18 @@ const App = {
   renderPoemas(poemas) {
     const grid = el("poems-grid");
     grid.innerHTML = "";
-
     poemas.forEach((p, i) => {
       const card = document.createElement("div");
       card.className = "poem-card";
       card.style.animationDelay = (i * 55) + "ms";
       card.onclick = () => this.abrirPoema(p);
-
-      const nuevo = esReciente(p.creado_en);
-
       card.innerHTML = `
-        ${nuevo ? '<span class="poem-badge-new">nuevo</span>' : ""}
+        ${esReciente(p.creado_en) ? '<span class="poem-badge-new">nuevo</span>' : ""}
         ${this.renderThumb(p)}
         <div class="poem-info">
           <div class="poem-title">${_esc(p.titulo)}</div>
           <div class="poem-date">${formatearFecha(p.creado_en)}</div>
-        </div>
-      `;
+        </div>`;
       grid.appendChild(card);
     });
   },
@@ -1162,320 +948,297 @@ const App = {
   renderThumb(p) {
     if (p.miniatura) {
       let src;
-      if (p.miniatura.startsWith("data:")) {
-        src = p.miniatura;
-      } else {
-        // Detectar si es SVG (empieza con "<svg" en base64: "PHN2")
+      if (p.miniatura.startsWith("data:")) { src = p.miniatura; }
+      else {
         const esSvg = p.miniatura.startsWith("PHN2") || p.miniatura.startsWith("Cjxz");
-        src = esSvg
-          ? "data:image/svg+xml;base64," + p.miniatura
-          : "data:image/jpeg;base64,"    + p.miniatura;
+        src = esSvg ? "data:image/svg+xml;base64," + p.miniatura
+                    : "data:image/jpeg;base64,"    + p.miniatura;
       }
-      return `<img class="poem-thumb" src="${src}" alt="${_esc(p.titulo)}"
-               onerror="this.parentElement.replaceChild(_placeholderThumb(), this)">`;
+      return `<img class="poem-thumb" src="${src}" alt="${_esc(p.titulo)}" onerror="this.parentElement.replaceChild(_placeholderThumb(),this)">`;
     }
     return _placeholderThumbHTML();
   },
 
   abrirPoema(p) {
-    if (!p.id) { toast("Este poema no tiene datos disponibles."); return; }
+    if (!p.id) { toast("Poema sin datos disponibles."); return; }
     this.abrirVisor(p);
   },
 
+  // ── Abrir visor con caché local + progress bar ─────────────────
   async abrirVisor(p) {
+    // Preparar la pantalla del visor
     el("visor-titulo").textContent = p.titulo || "Poema";
-    el("visor-spinner").style.display = "inline-block";
-    el("visor-frame").srcdoc = "";
     el("visor-overlay").classList.remove("hidden");
     document.body.style.overflow = "hidden";
 
-    try {
-      // Pedir el HTML crudo al GAS
-      const res = await gasPost({
-        action    : "pwa_get_html",
-        poem_id   : p.id,
-        pwa_token : State.token
-      }, 30000);
+    // Restaurar panel social a modo visible en móvil
+    this._socialVisible = true;
+    el("panel-social").classList.remove("social-collapsed");
+    hide("social-badge");
 
+    Progress.start();
+
+    // ── 1. Intentar abrir desde caché IndexedDB (instantáneo) ────
+    const htmlCached = await PoemCache.get(p.id);
+    if (htmlCached) {
+      el("visor-frame").srcdoc = htmlCached;
+      Progress.complete();
+      // Cargar social (desde caché de memoria o red)
+      Social.cargar(p.id, p.sesion_id || State.sesionId);
+      // Actualizar la caché silenciosamente en segundo plano
+      this._refrescarCachePoema(p);
+      return;
+    }
+
+    // ── 2. Sin caché → llamar al GAS con progress bar ────────────
+    try {
+      const res = await gasPost(
+        { action:"pwa_get_html", poem_id:p.id, pwa_token:State.token },
+        30000
+      );
       if (!res.ok || !res.html) throw new Error(res.error || "Sin contenido");
 
-      // Inyectar directamente en el iframe — se renderiza como página completa
       el("visor-frame").srcdoc = res.html;
+      Progress.complete();
+      PoemCache.set(p.id, res.html);          // guardar para próxima vez
       Social.cargar(p.id, p.sesion_id || State.sesionId);
 
     } catch(e) {
-      // Fallback: crear blob URL local y abrir en nueva pestaña
-      console.warn("pwa_get_html falló, usando fallback:", e.message);
+      Progress.error();
       el("visor-overlay").classList.add("hidden");
       document.body.style.overflow = "";
-
-      // Si el error es de red/timeout, avisar
-      if (e.name === "AbortError" || e.message.includes("timeout")) {
-        toast("⏱ Tiempo agotado. El GAS puede necesitar redeployarse con la versión nueva.");
-      } else {
-        toast("⚠️ Abriendo en Drive... (actualiza el GAS para ver el poema aquí)");
-        window.open(p.url_html || "#", "_blank", "noopener");
+      if (e.name === "AbortError") toast("⏱ Tiempo agotado. Comprueba tu conexión.");
+      else {
+        toast("⚠️ Error al abrir el poema.");
+        if (p.url_html) window.open(p.url_html, "_blank", "noopener");
       }
-    } finally {
-      el("visor-spinner").style.display = "none";
     }
+  },
+
+  // Actualiza la caché en segundo plano sin bloquear la UI
+  async _refrescarCachePoema(p) {
+    try {
+      const res = await gasPost({ action:"pwa_get_html", poem_id:p.id, pwa_token:State.token }, 20000);
+      if (res.ok && res.html) PoemCache.set(p.id, res.html);
+    } catch { /* silencioso */ }
   },
 
   cerrarVisor() {
     el("visor-overlay").classList.add("hidden");
     el("visor-frame").srcdoc = "";
     el("lista-comentarios").innerHTML = "";
-    el("barra-emojis").innerHTML = "";
-    el("inp-comentario").value = "";
+    el("barra-emojis").innerHTML      = "";
+    el("inp-comentario").value        = "";
+    hide("social-badge");
     Social._poemId = "";
     document.body.style.overflow = "";
   },
 
+  // Toggle del panel social (solo en móvil)
+  toggleSocial() {
+    this._socialVisible = !this._socialVisible;
+    el("panel-social").classList.toggle("social-collapsed", !this._socialVisible);
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  TEMAS (Fase 5)
+  // ══════════════════════════════════════════════════════════════
+  aplicarTema(temaNombre, guardar = true) {
+    const tema = TEMAS[temaNombre] || TEMAS.nocturno;
+    const root = document.documentElement;
+    Object.entries(tema.vars).forEach(([k, v]) => root.style.setProperty(k, v));
+    State.tema = temaNombre;
+    if (guardar) localStorage.setItem("pwa_tema", temaNombre);
+    // Actualizar meta theme-color
+    const metaColor = document.querySelector('meta[name="theme-color"]');
+    if (metaColor) metaColor.content = tema.vars["--bg"];
+  },
+
+  abrirTemas() {
+    this.cerrarMenu();
+    const grid = el("tema-grid");
+    grid.innerHTML = "";
+    Object.entries(TEMAS).forEach(([key, tema]) => {
+      const item = document.createElement("div");
+      item.className = "tema-item" + (State.tema === key ? " activo" : "");
+      // Swatch bicolor: mitad fondo, mitad acento
+      item.innerHTML = `
+        <div class="tema-swatch" style="background:linear-gradient(135deg,${tema.vars["--bg"]} 50%,${tema.vars["--accent"]} 50%)"></div>
+        <span class="tema-nombre">${tema.emoji}<br>${tema.nombre}</span>`;
+      item.onclick = () => {
+        this.aplicarTema(key);
+        grid.querySelectorAll(".tema-item").forEach(i => i.classList.remove("activo"));
+        item.classList.add("activo");
+        toast("Tema " + tema.nombre + " aplicado ✨");
+      };
+      grid.appendChild(item);
+    });
+    el("modal-temas").classList.add("open");
+  },
+
+  cerrarTemas() { el("modal-temas").classList.remove("open"); },
+
+  // ══════════════════════════════════════════════════════════════
+  //  GESTOR DE POEMAS (Fase 5)
+  // ══════════════════════════════════════════════════════════════
+  abrirGestor() {
+    this.cerrarMenu();
+    if (!this._poemas.length) { toast("Carga la galería primero."); return; }
+    Gestor.cargar(this._poemas);
+    el("modal-gestor").classList.add("open");
+  },
+
+  cerrarGestor() { el("modal-gestor").classList.remove("open"); },
+
+  // ── Cambiar contraseña ─────────────────────────────────────────
   abrirCambiarPwd() {
     this.cerrarMenu();
     el("pwd-usuario-label").textContent = "@" + State.usuario;
-    el("inp-pwd-actual").value = "";
-    el("inp-pwd-nueva").value  = "";
-    el("inp-pwd-confirmar").value = "";
+    ["inp-pwd-actual","inp-pwd-nueva","inp-pwd-confirmar"].forEach(id => el(id).value = "");
     el("pwd-error").classList.remove("visible");
     el("pwd-ok").style.display = "none";
     showScreen("screen-cambiar-pwd");
   },
 
-  volverDesdeCambiarPwd() {
-    showScreen("screen-galeria");
-  },
+  volverDesdeCambiarPwd() { showScreen("screen-galeria"); },
 
   async guardarNuevaPwd() {
-    const actual     = el("inp-pwd-actual").value;
-    const nueva      = el("inp-pwd-nueva").value;
-    const confirmar  = el("inp-pwd-confirmar").value;
-    const err        = el("pwd-error");
-    const ok         = el("pwd-ok");
+    const actual    = el("inp-pwd-actual").value;
+    const nueva     = el("inp-pwd-nueva").value;
+    const confirmar = el("inp-pwd-confirmar").value;
+    const err = el("pwd-error"); const ok = el("pwd-ok");
+    err.classList.remove("visible"); ok.style.display = "none";
 
-    err.classList.remove("visible");
-    ok.style.display = "none";
+    if (!actual)           { err.textContent="Escribe tu contraseña actual.";            err.classList.add("visible"); return; }
+    if (!nueva)            { err.textContent="Escribe la nueva contraseña.";             err.classList.add("visible"); return; }
+    if (nueva.length < 6)  { err.textContent="La contraseña debe tener al menos 6 caracteres."; err.classList.add("visible"); return; }
+    if (nueva !== confirmar){ err.textContent="Las contraseñas no coinciden.";           err.classList.add("visible"); return; }
+    if (nueva === actual)   { err.textContent="La nueva debe ser diferente a la actual.";err.classList.add("visible"); return; }
 
-    if (!actual)    { err.textContent = "Escribe tu contraseña actual.";    err.classList.add("visible"); return; }
-    if (!nueva)     { err.textContent = "Escribe la nueva contraseña.";     err.classList.add("visible"); return; }
-    if (nueva.length < 6) { err.textContent = "La contraseña debe tener al menos 6 caracteres."; err.classList.add("visible"); return; }
-    if (nueva !== confirmar) { err.textContent = "Las contraseñas no coinciden."; err.classList.add("visible"); return; }
-    if (nueva === actual)    { err.textContent = "La nueva contraseña debe ser diferente."; err.classList.add("visible"); return; }
-
-    const btnGuardar = document.querySelector("#screen-cambiar-pwd .btn-primary");
-    btnGuardar.disabled = true;
-    btnGuardar.textContent = "Guardando…";
-
+    const btn = document.querySelector("#screen-cambiar-pwd .btn-primary");
+    btn.disabled = true; btn.textContent = "Guardando…";
     try {
       const [hashActual, hashNueva] = await Promise.all([hashPwd(actual), hashPwd(nueva)]);
-      const res = await gasPost({
-        action          : "pwa_cambiar_pwd",
-        pwd_actual_hash : hashActual,
-        pwd_nueva_hash  : hashNueva,
-        pwa_token       : State.token
-      });
-
+      const res = await gasPost({ action:"pwa_cambiar_pwd", pwd_actual_hash:hashActual, pwd_nueva_hash:hashNueva, pwa_token:State.token });
       if (res.ok) {
         ok.style.display = "block";
-        // Actualizar hash guardado en localStorage si tenía "recordar"
-        if (localStorage.getItem("pwa_recordar") === "1") {
-          State.pwdHash = hashNueva;
-          State.guardar(true);
-        }
+        if (localStorage.getItem("pwa_recordar")==="1") { State.pwdHash = hashNueva; State.guardar(true); }
         setTimeout(() => this.volverDesdeCambiarPwd(), 2000);
       } else {
-        const msgs = {
-          pwd_actual_incorrecta     : "La contraseña actual es incorrecta.",
-          la_nueva_debe_ser_diferente: "La nueva contraseña debe ser diferente a la actual.",
-          token_invalido            : "Tu sesión expiró. Vuelve a iniciar sesión."
-        };
+        const msgs = { pwd_actual_incorrecta:"La contraseña actual es incorrecta.", la_nueva_debe_ser_diferente:"La nueva debe ser diferente.", token_invalido:"Tu sesión expiró." };
         err.textContent = msgs[res.error] || ("Error: " + res.error);
         err.classList.add("visible");
       }
-    } catch(e) {
-      err.textContent = "Error de conexión. Inténtalo de nuevo.";
-      err.classList.add("visible");
-    } finally {
-      btnGuardar.disabled  = false;
-      btnGuardar.textContent = "Guardar nueva contraseña";
-    }
+    } catch { err.textContent = "Error de conexión."; err.classList.add("visible"); }
+    finally  { btn.disabled = false; btn.textContent = "Guardar nueva contraseña"; }
   },
 
-  refrescar() {
-    toast("Actualizando…");
-    this.cargarPoemas();
-  },
-
-  abrirMenu() {
-    el("sheet-overlay").classList.add("open");
-  },
-  cerrarMenu() {
-    el("sheet-overlay").classList.remove("open");
-  },
-
+  refrescar() { toast("Actualizando…"); this.cargarPoemas(); },
+  abrirMenu()  { el("sheet-overlay").classList.add("open"); },
+  cerrarMenu() { el("sheet-overlay").classList.remove("open"); },
   logout() {
-    this.cerrarMenu();
-    State.limpiar();
+    this.cerrarMenu(); State.limpiar(); SocialCache.limpiar();
+    PoemCache.limpiar();  // borra caché local al salir
     showScreen("screen-login");
-    el("inp-usuario").value = "";
-    el("inp-pwd").value = "";
+    el("inp-usuario").value = ""; el("inp-pwd").value = "";
     el("login-error").classList.remove("visible");
     toast("Sesión cerrada.");
   }
 };
 
-// ─── HELPERS ─────────────────────────────────────────────────────────
-function _esc(s) {
-  return String(s || "")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;");
-}
-
-function _mensajeError(code) {
-  const map = {
-    usuario_no_encontrado  : "Usuario no encontrado.",
-    credenciales_incorrectas: "Contraseña incorrecta.",
-    usuario_inactivo       : "Tu cuenta está inactiva. Contacta al creador.",
-    usuario_requerido      : "Introduce tu usuario.",
-    pwd_hash_requerido     : "Introduce tu contraseña."
-  };
-  return map[code] || ("Error: " + (code || "desconocido"));
-}
-
-function _placeholderThumbHTML() {
-  const icons = ["📜","🌹","✉️","💌","🕊️","🌙","⭐","🌸"];
-  const icon  = icons[Math.floor(Math.random() * icons.length)];
-  return `<div class="poem-thumb-placeholder">
-    <span class="placeholder-icon">${icon}</span>
-  </div>`;
-}
-
-function _placeholderThumb() {
-  const el = document.createElement("div");
-  el.className = "poem-thumb-placeholder";
-  const icons = ["📜","🌹","✉️","💌","🕊️","🌙","⭐","🌸"];
-  el.innerHTML = `<span class="placeholder-icon">${icons[Math.floor(Math.random()*icons.length)]}</span>`;
-  return el;
-}
-
-function _inyectarManifest() {
-  const manifest = {
-    name: "Poemenizador Da Vinci",
-    short_name: "Poemenizador",
-    description: "Tu galería privada de poemas",
-    start_url: "./",
-    display: "standalone",
-    orientation: "portrait",
-    background_color: "#0d0b14",
-    theme_color: "#0d0b14",
-    icons: [
-      { src: _iconSvgDataUrl(192), sizes: "192x192", type: "image/svg+xml" },
-      { src: _iconSvgDataUrl(512), sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
-    ]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
-  const url  = URL.createObjectURL(blob);
-  document.getElementById("pwa-manifest").href = url;
-}
-
-function _iconSvgDataUrl(size) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}">
-    <rect width="${size}" height="${size}" fill="#0d0b14"/>
-    <text x="50%" y="58%" font-size="${size*0.55}" text-anchor="middle" dominant-baseline="middle">🕊️</text>
-  </svg>`;
-  return "data:image/svg+xml;base64," + btoa(svg);
-}
-
-// ─── PULL TO REFRESH (simple) ────────────────────────────────────────
-let ptStart = 0;
-const body  = document.getElementById("gallery-body");
-
-body.addEventListener("touchstart", e => {
-  if (body.scrollTop === 0) ptStart = e.touches[0].clientY;
-}, { passive: true });
-
-body.addEventListener("touchend", e => {
-  if (!ptStart) return;
-  const dy = e.changedTouches[0].clientY - ptStart;
-  if (dy > 70 && body.scrollTop === 0) App.refrescar();
-  ptStart = 0;
-}, { passive: true });
-
-// ─── MÓDULO SOCIAL — Reacciones y Comentarios ───────────────────────
+// ══════════════════════════════════════════════════════════════════
+//  SOCIAL — reacciones y comentarios
+// ══════════════════════════════════════════════════════════════════
 const EMOJIS = ["❤️","😂","😮","😢","🔥","👏","🥹","💌"];
 
 const Social = {
   _poemId : "",
+  _sesionActual : "",
+  _puedeComentar: false,
   _conteos: {},
   _miEmoji: "",
 
-  // Llamado desde abrirVisor después de cargar el HTML
   async cargar(poemId, poemSesionId) {
-    this._poemId      = poemId;
-    this._sesionActual = poemSesionId || "";  // sesion del poema
-    // Puede comentar si el token pertenece al dueño de esa sesión
-    this._puedecomentar = (State.sesionId && State.sesionId === this._sesionActual);
-    this._renderEmojis();  // mostrar barra vacía inmediatamente
-    el("lista-comentarios").innerHTML =
-      '<div class="social-loading">Cargando reacciones…</div>';
+    this._poemId       = poemId;
+    this._sesionActual = poemSesionId || "";
+    this._puedeComentar = !!(State.token && State.sesionId
+                           && this._sesionActual && State.sesionId === this._sesionActual);
 
-    // Cargar reacciones y comentarios en paralelo
+    // ── 1. Mostrar desde caché de memoria instantáneamente ───────
+    const cached = SocialCache.get(poemId);
+    if (cached) {
+      this._conteos = cached.conteos;
+      this._miEmoji = cached.miEmoji;
+      this._renderEmojis();
+      this._renderComentarios(cached.comentarios);
+      this._actualizarPermisoComentario();
+      // Actualizar en background (silencioso)
+      this._fetchSocial(poemId, false);
+      return;
+    }
+
+    // ── 2. Sin caché → skeleton de carga + fetch ─────────────────
+    this._renderEmojis();   // barra de emojis vacía de inmediato
+    el("lista-comentarios").innerHTML = '<div class="social-loading"><span class="social-spinner-sm"></span>Cargando…</div>';
+    this._actualizarPermisoComentario();
+    await this._fetchSocial(poemId, true);
+  },
+
+  // Trae reacciones + comentarios del GAS y actualiza la UI
+  async _fetchSocial(poemId, mostrarEnUI) {
     try {
       const [rRes, cRes] = await Promise.all([
-        gasPost({ action:"pwa_listar_reacciones", poem_id:poemId, pwa_token:State.token }),
+        gasPost({ action:"pwa_listar_reacciones",  poem_id:poemId, pwa_token:State.token }),
         gasPost({ action:"pwa_listar_comentarios", poem_id:poemId })
       ]);
 
-      if (rRes.ok) { this._conteos = rRes.conteos || {}; this._miEmoji = rRes.mi_reaccion || ""; }
-      this._renderEmojis();
-      this._actualizarPermisoComentario();
+      // Ignorar si mientras tanto el usuario abrió otro poema
+      if (this._poemId !== poemId) return;
 
-      if (cRes.ok) this._renderComentarios(cRes.comentarios || []);
-      else el("lista-comentarios").innerHTML = '<div class="social-loading">Sin comentarios aún.</div>';
+      const conteos     = rRes.ok ? (rRes.conteos     || {}) : this._conteos;
+      const miEmoji     = rRes.ok ? (rRes.mi_reaccion || "") : this._miEmoji;
+      const comentarios = cRes.ok ? (cRes.comentarios || []) : null;
 
-    } catch(e) {
-      el("lista-comentarios").innerHTML =
-        '<div class="social-loading">⚠️ Sin conexión.</div>';
+      this._conteos = conteos;
+      this._miEmoji = miEmoji;
+      if (mostrarEnUI || rRes.ok)    this._renderEmojis();
+      if (comentarios !== null)      this._renderComentarios(comentarios);
+      else if (mostrarEnUI)          el("lista-comentarios").innerHTML = '<div class="social-loading">Sin comentarios aún.</div>';
+
+      // Badge de comentarios
+      if (comentarios && comentarios.length) show("social-badge"); else hide("social-badge");
+
+      // Guardar en caché
+      SocialCache.set(poemId, conteos, miEmoji, comentarios || []);
+
+    } catch {
+      if (this._poemId !== poemId) return;
+      if (mostrarEnUI) el("lista-comentarios").innerHTML = '<div class="social-loading">⚠️ Sin conexión.</div>';
     }
   },
 
   _actualizarPermisoComentario() {
-    const inp  = el("inp-comentario");
-    const btn  = inp.nextElementSibling;
-    const puede = this._puedecomentario !== false && this._puedeComentarReal();
-    inp.disabled    = !puede;
-    btn.disabled    = !puede;
-    inp.placeholder = puede
-      ? "Escribe un comentario…"
-      : "Solo el destinatario puede comentar aquí 🔒";
-    inp.style.opacity = puede ? "1" : "0.5";
-    btn.style.opacity = puede ? "1" : "0.4";
-  },
-
-  _puedeComentarReal() {
-    // Puede comentar si su sesionId coincide con la sesión del poema
-    return !!(State.token && State.sesionId && this._sesionActual
-           && State.sesionId === this._sesionActual);
+    const inp = el("inp-comentario");
+    const btn = el("btn-send-comentario");
+    inp.disabled    = !this._puedeComentar;
+    btn.disabled    = !this._puedeComentar;
+    inp.placeholder = this._puedeComentar ? "Escribe un comentario…" : "Solo el destinatario puede comentar aquí 🔒";
+    inp.style.opacity = btn.style.opacity = this._puedeComentar ? "1" : "0.5";
   },
 
   _renderEmojis() {
     const bar = el("barra-emojis");
     bar.innerHTML = "";
-
-    // Etiqueta "Reacciones"
     const lbl = document.createElement("span");
-    lbl.style.cssText = "font-size:0.72rem;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-right:4px;";
+    lbl.style.cssText = "font-size:.68rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-right:2px;flex-shrink:0;align-self:center;";
     lbl.textContent = "Reaccionar:";
     bar.appendChild(lbl);
-
     EMOJIS.forEach(emoji => {
-      const cnt  = (this._conteos[emoji] || 0);
+      const cnt    = this._conteos[emoji] || 0;
       const activo = this._miEmoji === emoji;
-      const btn  = document.createElement("button");
+      const btn    = document.createElement("button");
       btn.className = "emoji-btn" + (activo ? " activo" : "");
-      btn.innerHTML = `${emoji}${cnt > 0 ? ` <span class="cnt">${cnt}</span>` : ""}`;
+      btn.innerHTML = emoji + (cnt > 0 ? ` <span class="cnt">${cnt}</span>` : "");
       btn.title     = activo ? "Quitar reacción" : "Reaccionar con " + emoji;
       btn.onclick   = () => this.reaccionar(emoji);
       bar.appendChild(btn);
@@ -1492,7 +1255,7 @@ const Social = {
     comentarios.forEach(c => {
       const item = document.createElement("div");
       item.className = "comentario-item";
-      const inicial = (c.nombre || "?").charAt(0).toUpperCase();
+      const inicial = (c.nombre||"?").charAt(0).toUpperCase();
       item.innerHTML = `
         <div class="comentario-avatar">${inicial}</div>
         <div class="comentario-burbuja">
@@ -1502,53 +1265,41 @@ const Social = {
         </div>`;
       lista.appendChild(item);
     });
-    // Scroll al último comentario
     lista.scrollTop = lista.scrollHeight;
   },
 
   async reaccionar(emoji) {
-    if (!State.token) { toast("Inicia sesión para reaccionar."); return; }
+    if (!State.token)  { toast("Inicia sesión para reaccionar."); return; }
     if (!this._poemId) return;
     try {
-      const res = await gasPost({
-        action   : "pwa_reaccionar",
-        poem_id  : this._poemId,
-        emoji,
-        pwa_token: State.token
-      });
+      const res = await gasPost({ action:"pwa_reaccionar", poem_id:this._poemId, emoji, pwa_token:State.token });
       if (res.ok) {
         this._conteos = res.conteos || {};
         this._miEmoji = res.mi_reaccion || "";
         this._renderEmojis();
+        SocialCache.actualizarReacciones(this._poemId, this._conteos, this._miEmoji);
       }
-    } catch(e) { toast("Error al reaccionar."); }
+    } catch { toast("Error al reaccionar."); }
   },
 
   async enviarComentario() {
-    if (!State.token) { toast("Inicia sesión para comentar."); return; }
+    if (!State.token)  { toast("Inicia sesión para comentar."); return; }
     const inp   = el("inp-comentario");
     const texto = inp.value.trim();
     if (!texto) return;
     inp.disabled = true;
-
     try {
-      const res = await gasPost({
-        action   : "pwa_comentar",
-        poem_id  : this._poemId,
-        texto,
-        pwa_token: State.token
-      });
+      const res = await gasPost({ action:"pwa_comentar", poem_id:this._poemId, texto, pwa_token:State.token });
       if (res.ok) {
         inp.value = "";
-        // Añadir el comentario localmente sin recargar todo
-        const c    = res.comentario;
+        const c     = res.comentario;
         const lista = el("lista-comentarios");
         const placeholder = lista.querySelector(".social-loading");
         if (placeholder) placeholder.remove();
         const item = document.createElement("div");
         item.className = "comentario-item";
-        const inicial = (c.nombre || "?").charAt(0).toUpperCase();
-        item.style.animation = "cardSlideIn 0.3s ease both";
+        item.style.animation = "cardSlideIn .3s ease both";
+        const inicial = (c.nombre||"?").charAt(0).toUpperCase();
         item.innerHTML = `
           <div class="comentario-avatar">${inicial}</div>
           <div class="comentario-burbuja">
@@ -1558,20 +1309,145 @@ const Social = {
           </div>`;
         lista.appendChild(item);
         lista.scrollTop = lista.scrollHeight;
+        show("social-badge");
+        SocialCache.agregarComentario(this._poemId, c);
       } else {
-        const msg = res.error === "solo_el_destinatario_puede_comentar"
-        ? "Solo el destinatario puede comentar en este poema."
-        : (res.error || "Error al comentar.");
-      toast(msg);
+        const msg = res.error==="solo_el_destinatario_puede_comentar"
+          ? "Solo el destinatario puede comentar." : (res.error || "Error al comentar.");
+        toast(msg);
       }
-    } catch(e) {
-      toast("Error de conexión.");
-    } finally {
-      inp.disabled = false;
-      inp.focus();
-    }
+    } catch { toast("Error de conexión."); }
+    finally  { inp.disabled = false; inp.focus(); }
   }
 };
+
+// ══════════════════════════════════════════════════════════════════
+//  GESTOR DE POEMAS (Fase 5) — reordenar y toggle de visibilidad
+// ══════════════════════════════════════════════════════════════════
+const Gestor = {
+  _poemas  : [],    // copia de trabajo
+  _original: [],    // copia original para detectar cambios
+
+  cargar(poemas) {
+    this._original = poemas.map(p => ({...p}));
+    this._poemas   = poemas.map(p => ({...p}));
+    this._render();
+  },
+
+  _esVisible(p) {
+    return p.visible !== false && p.visible !== "false" && p.visible !== "0" && p.visible !== 0;
+  },
+
+  _render() {
+    const lista = el("gestor-lista");
+    lista.innerHTML = "";
+    this._poemas.forEach((p, i) => {
+      const visible = this._esVisible(p);
+      const fila    = document.createElement("div");
+      fila.className  = "gestor-fila";
+      fila.innerHTML  = `
+        <button class="gestor-btn-ord" onclick="Gestor._mover(${i},-1)" ${i===0?"disabled":""}>▲</button>
+        <button class="gestor-btn-ord" onclick="Gestor._mover(${i}, 1)" ${i===this._poemas.length-1?"disabled":""}>▼</button>
+        <span class="gestor-fila-titulo" title="${_esc(p.titulo)}">${_esc(p.titulo)}</span>
+        <span class="gestor-fila-fecha">${formatearFecha(p.creado_en)}</span>
+        <button class="gestor-vis-btn${visible?"":" oculto"}" onclick="Gestor._toggleVis(${i})">
+          ${visible?"👁️ Visible":"🚫 Oculto"}
+        </button>`;
+      lista.appendChild(fila);
+    });
+  },
+
+  _mover(idx, dir) {
+    const ni = idx + dir;
+    if (ni < 0 || ni >= this._poemas.length) return;
+    [this._poemas[idx], this._poemas[ni]] = [this._poemas[ni], this._poemas[idx]];
+    this._render();
+  },
+
+  _toggleVis(idx) {
+    this._poemas[idx] = {...this._poemas[idx], visible: !this._esVisible(this._poemas[idx])};
+    this._render();
+  },
+
+  async guardar() {
+    const btn = el("btn-gestor-guardar");
+    btn.disabled = true; btn.textContent = "Guardando…";
+    try {
+      const orden = this._poemas.map(p => p.id);
+
+      // 1. Guardar nuevo orden
+      const resOrden = await gasPost({
+        action    : "pwa_reordenar_poemas",
+        sesion_id : State.sesionId,
+        orden,
+        pwa_token : State.token
+      });
+
+      // 2. Actualizar visibilidades que cambiaron
+      const cambiosVis = [];
+      for (const p of this._poemas) {
+        const orig    = this._original.find(o => o.id === p.id);
+        const visOrig = orig ? this._esVisible(orig) : true;
+        const visNuev = this._esVisible(p);
+        if (visOrig !== visNuev) {
+          cambiosVis.push(gasPost({
+            action    : "pwa_toggle_visible",
+            id        : p.id,
+            visible   : visNuev,
+            pwa_token : State.token
+          }));
+        }
+      }
+      await Promise.all(cambiosVis);
+
+      if (resOrden.ok || resOrden.error === undefined) {
+        toast("✅ Cambios guardados");
+        App.cerrarGestor();
+        App.refrescar();
+      } else {
+        const msg = resOrden.error || "Error al guardar";
+        // Si el error es de token admin, explicar
+        if (String(msg).includes("Token") || String(msg).includes("token") || String(msg).includes("Acceso")) {
+          toast("⚠️ Necesitas GAS v6.1 para reordenar desde la app");
+        } else {
+          toast("⚠️ " + msg);
+        }
+      }
+    } catch { toast("Error de conexión al guardar."); }
+    finally  { btn.disabled = false; btn.textContent = "💾 Guardar cambios"; }
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  PULL TO REFRESH
+// ══════════════════════════════════════════════════════════════════
+let ptStart = 0;
+const _body = document.getElementById("gallery-body");
+_body.addEventListener("touchstart", e => { if (_body.scrollTop===0) ptStart = e.touches[0].clientY; }, {passive:true});
+_body.addEventListener("touchend",   e => {
+  if (!ptStart) return;
+  if (e.changedTouches[0].clientY - ptStart > 70 && _body.scrollTop===0) App.refrescar();
+  ptStart = 0;
+}, {passive:true});
+
+// ══════════════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════════════
+function _mensajeError(code) {
+  const map = { usuario_no_encontrado:"Usuario no encontrado.", credenciales_incorrectas:"Contraseña incorrecta.", usuario_inactivo:"Tu cuenta está inactiva.", usuario_requerido:"Introduce tu usuario.", pwd_hash_requerido:"Introduce tu contraseña." };
+  return map[code] || ("Error: " + (code||"desconocido"));
+}
+
+function _placeholderThumbHTML() {
+  const icons = ["📜","🌹","✉️","💌","🕊️","🌙","⭐","🌸"];
+  return `<div class="poem-thumb-placeholder"><span class="placeholder-icon">${icons[Math.floor(Math.random()*icons.length)]}</span></div>`;
+}
+function _placeholderThumb() {
+  const d = document.createElement("div"); d.className = "poem-thumb-placeholder";
+  const icons = ["📜","🌹","✉️","💌","🕊️","🌙","⭐","🌸"];
+  d.innerHTML = `<span class="placeholder-icon">${icons[Math.floor(Math.random()*icons.length)]}</span>`;
+  return d;
+}
 
 function _formatFechaSocial(str) {
   if (!str) return "";
@@ -1580,7 +1456,29 @@ function _formatFechaSocial(str) {
   return `${m[1]}/${m[2]}/${m[3]} ${m[4]}:${m[5]}`;
 }
 
-// ─── INICIO ──────────────────────────────────────────────────────────
+function _inyectarManifest() {
+  const manifest = {
+    name:"Poemenizador Da Vinci", short_name:"Poemenizador",
+    description:"Tu galería privada de poemas",
+    start_url:"./", display:"standalone", orientation:"portrait",
+    background_color:"#0d0b14", theme_color:"#0d0b14",
+    icons:[
+      { src:_iconSvgDataUrl(192), sizes:"192x192", type:"image/svg+xml" },
+      { src:_iconSvgDataUrl(512), sizes:"512x512", type:"image/svg+xml", purpose:"any maskable" }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:"application/manifest+json"});
+  document.getElementById("pwa-manifest").href = URL.createObjectURL(blob);
+}
+
+function _iconSvgDataUrl(size) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" fill="#0d0b14"/><text x="50%" y="58%" font-size="${size*.55}" text-anchor="middle" dominant-baseline="middle">🕊️</text></svg>`;
+  return "data:image/svg+xml;base64," + btoa(svg);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  INICIO
+// ══════════════════════════════════════════════════════════════════
 App.init();
 </script>
 </body>
