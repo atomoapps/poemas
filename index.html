@@ -921,9 +921,14 @@ const App = {
         show("gallery-empty"); return;
       }
       this._poemas = res.poemas;
-      if (!res.poemas.length) { show("gallery-empty"); }
-      else { this.renderPoemas(res.poemas); show("gallery-content"); }
-      el("gallery-subtitle").textContent = res.poemas.length + (res.poemas.length===1?" poema":" poemas");
+      // La galería solo muestra poemas visibles; el gestor los ve todos
+      const visibles = res.poemas.filter(p => p.visible !== false && p.visible !== "false" && p.visible !== "0" && p.visible !== 0);
+      if (!visibles.length) { show("gallery-empty"); }
+      else { this.renderPoemas(visibles); show("gallery-content"); }
+      const total = res.poemas.length;
+      const ocultos = total - visibles.length;
+      el("gallery-subtitle").textContent = visibles.length + (visibles.length===1?" poema":" poemas")
+        + (ocultos > 0 ? " · " + ocultos + " oculto(s)" : "");
     } catch(e) {
       hide("gallery-loading");
       const msg = e.name==="AbortError" ? "La petición tardó demasiado." : "Sin conexión.";
