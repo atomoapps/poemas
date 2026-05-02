@@ -303,7 +303,8 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'D
 #modal-gestor-inner {
   background:var(--surface); border-radius:var(--radius-lg);
   border:1px solid var(--border); box-shadow:var(--shadow);
-  width:100%; max-width:460px; max-height:82vh;
+  width:100%; max-width:500px;
+  height:min(88vh, 640px);
   display:flex; flex-direction:column;
   transform:scale(.96) translateY(10px);
   transition:transform .35s cubic-bezier(.34,1.1,.64,1);
@@ -322,7 +323,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'D
 .gestor-btn-ord  { background:none; border:1px solid var(--border); border-radius:6px; width:26px; height:26px; color:var(--text-2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:.75rem; transition:all .15s; flex-shrink:0; }
 .gestor-btn-ord:hover    { background:var(--surface-2); color:var(--text); }
 .gestor-btn-ord:disabled { opacity:.2; cursor:default; }
-.gestor-vis-btn  { background:none; border:1.5px solid var(--border); border-radius:20px; padding:3px 10px; font-size:.7rem; color:var(--text-2); cursor:pointer; transition:all .18s; flex-shrink:0; white-space:nowrap; }
+.gestor-vis-btn  { background:none; border:1.5px solid var(--border); border-radius:20px; padding:4px 12px; font-size:.72rem; color:var(--text-2); cursor:pointer; transition:all .18s; flex-shrink:0; white-space:nowrap; min-width:88px; text-align:center; }
 .gestor-vis-btn:hover  { border-color:var(--accent); color:var(--accent); }
 .gestor-vis-btn.oculto { color:var(--muted); border-color:rgba(200,185,230,.08); }
 .gestor-footer   { display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--border); }
@@ -1385,47 +1386,46 @@ const Gestor = {
   async guardar() {
     const btn = el("btn-gestor-guardar");
     btn.disabled = true; btn.textContent = "Guardando…";
+    let hayErrores = false;
     try {
-      const orden = this._poemas.map(p => p.id);
-
-      // 1. Guardar nuevo orden
-      const resOrden = await gasPost({
-        action    : "pwa_reordenar_poemas",
-        sesion_id : State.sesionId,
-        orden,
-        pwa_token : State.token
-      });
-
-      // 2. Actualizar visibilidades que cambiaron
+      // 1. ── Visibilidades (prioridad — funciona con pwa_token en GAS v6.1) ──
       const cambiosVis = [];
       for (const p of this._poemas) {
         const orig    = this._original.find(o => o.id === p.id);
         const visOrig = orig ? this._esVisible(orig) : true;
         const visNuev = this._esVisible(p);
         if (visOrig !== visNuev) {
-          cambiosVis.push(gasPost({
-            action    : "pwa_toggle_visible",
-            id        : p.id,
-            visible   : visNuev,
-            pwa_token : State.token
-          }));
+          cambiosVis.push(
+            gasPost({ action:"pwa_toggle_visible", id:p.id,
+                      visible:visNuev, pwa_token:State.token })
+            .then(res => { if (!res.ok) hayErrores = true; })
+            .catch(() => { hayErrores = true; })
+          );
         }
       }
       await Promise.all(cambiosVis);
 
-      if (resOrden.ok || resOrden.error === undefined) {
-        toast("✅ Cambios guardados");
-        App.cerrarGestor();
-        App.refrescar();
-      } else {
-        const msg = resOrden.error || "Error al guardar";
-        // Si el error es de token admin, explicar
-        if (String(msg).includes("Token") || String(msg).includes("token") || String(msg).includes("Acceso")) {
-          toast("⚠️ Necesitas GAS v6.1 para reordenar desde la app");
-        } else {
-          toast("⚠️ " + msg);
-        }
+      // 2. ── Orden ───────────────────────────────────────────────────────────
+      const orden = this._poemas.map(p => p.id);
+      const resOrden = await gasPost({
+        action:"pwa_reordenar_poemas", sesion_id:State.sesionId,
+        orden, pwa_token:State.token
+      }).catch(() => ({ ok:false, error:"red" }));
+
+      if (!resOrden.ok) {
+        const msg = resOrden.error || "";
+        if (msg === "red") toast("⚠️ Error de red al guardar orden.");
+        else if (msg.toLowerCase().includes("token") || msg.toLowerCase().includes("acceso"))
+          toast("⚠️ Necesitas GAS v6.1 para reordenar. Visibilidad sí guardada.");
+        else toast("⚠️ Orden no guardado: " + msg);
       }
+
+      if (hayErrores) toast("⚠️ Algún cambio de visibilidad no se guardó.");
+      else if (resOrden.ok) toast("✅ Cambios guardados correctamente.");
+
+      App.cerrarGestor();
+      App.refrescar();
+
     } catch { toast("Error de conexión al guardar."); }
     finally  { btn.disabled = false; btn.textContent = "💾 Guardar cambios"; }
   }
