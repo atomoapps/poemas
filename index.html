@@ -7,12 +7,12 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="Poemenizador">
+  <meta name="apple-mobile-web-app-title" content="Mis Versos">
   <link rel="manifest" id="pwa-manifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  <title>Poemenizador Da Vinci</title>
+  <title>Mis Versos</title>
 
 <style>
 /* ═══════════════════════════════════════════════════════
@@ -90,7 +90,8 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'D
 
 .gallery-header {
   flex-shrink:0; display:flex; align-items:center; gap:10px;
-  padding:10px 16px; border-bottom:1px solid var(--border);
+  padding:10px 16px; padding-top:calc(10px + env(safe-area-inset-top));
+  border-bottom:1px solid var(--border);
   background:var(--bg-2); min-height:52px;
 }
 .gallery-logo-small { font-size:1.3rem; flex-shrink:0; filter:drop-shadow(0 0 8px rgba(212,165,116,.4)); }
@@ -102,7 +103,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'D
 .btn-icon:hover  { background:var(--surface-2); color:var(--text); }
 .btn-icon:active { transform:scale(.92); }
 
-.gallery-body { flex:1; overflow-y:auto; overflow-x:hidden; padding:14px 14px 28px; -webkit-overflow-scrolling:touch; }
+.gallery-body { flex:1; overflow-y:auto; overflow-x:hidden; padding:14px 14px calc(28px + env(safe-area-inset-bottom)); -webkit-overflow-scrolling:touch; }
 .gallery-body::-webkit-scrollbar { width:4px; }
 .gallery-body::-webkit-scrollbar-track { background:transparent; }
 .gallery-body::-webkit-scrollbar-thumb { background:var(--muted); border-radius:2px; }
@@ -316,20 +317,31 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'D
 .gestor-lista    { flex:1; overflow-y:auto; padding:4px 0; min-height:0; }
 .gestor-lista::-webkit-scrollbar { width:3px; }
 .gestor-lista::-webkit-scrollbar-thumb { background:var(--muted); border-radius:2px; }
-.gestor-fila     { display:flex; align-items:center; gap:8px; padding:9px 14px; border-bottom:1px solid rgba(200,185,230,.05); transition:background .15s; }
+.gestor-fila     { display:flex; align-items:center; gap:6px; padding:9px 14px; border-bottom:1px solid rgba(200,185,230,.05); transition:background .15s; }
 .gestor-fila:hover { background:rgba(255,255,255,.03); }
-.gestor-fila-titulo { flex:1; font-size:.84rem; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.gestor-fila-fecha  { font-size:.65rem; color:var(--muted); font-style:italic; flex-shrink:0; }
+.gestor-fila-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.gestor-fila-titulo { font-size:.84rem; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.gestor-fila-fecha  { font-size:.65rem; color:var(--muted); font-style:italic; }
+.gestor-fila-stats  { font-size:.62rem; color:var(--text-2); display:flex; gap:6px; }
 .gestor-btn-ord  { background:none; border:1px solid var(--border); border-radius:6px; width:26px; height:26px; color:var(--text-2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:.75rem; transition:all .15s; flex-shrink:0; }
 .gestor-btn-ord:hover    { background:var(--surface-2); color:var(--text); }
 .gestor-btn-ord:disabled { opacity:.2; cursor:default; }
-.gestor-vis-btn  { background:none; border:1.5px solid var(--border); border-radius:20px; padding:4px 12px; font-size:.72rem; color:var(--text-2); cursor:pointer; transition:all .18s; flex-shrink:0; white-space:nowrap; min-width:88px; text-align:center; }
+.gestor-btn-view { background:none; border:1.5px solid var(--border); border-radius:8px; width:32px; height:32px; color:var(--text-2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:.85rem; transition:all .18s; flex-shrink:0; }
+.gestor-btn-view:hover { background:rgba(212,165,116,.12); border-color:var(--accent); color:var(--accent); }
+.gestor-btn-del  { background:none; border:1.5px solid rgba(224,112,112,.2); border-radius:8px; width:32px; height:32px; color:var(--danger); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:.82rem; transition:all .18s; flex-shrink:0; opacity:.6; }
+.gestor-btn-del:hover { background:rgba(224,112,112,.1); opacity:1; }
+.gestor-vis-btn  { background:none; border:1.5px solid var(--border); border-radius:20px; padding:4px 8px; font-size:.7rem; color:var(--text-2); cursor:pointer; transition:all .18s; flex-shrink:0; white-space:nowrap; min-width:74px; text-align:center; }
 .gestor-vis-btn:hover  { border-color:var(--accent); color:var(--accent); }
 .gestor-vis-btn.oculto { color:var(--muted); border-color:rgba(200,185,230,.08); }
-.gestor-footer   { display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--border); }
-.gestor-footer .btn-sec { flex:1; text-align:center; }
+.gestor-footer   { display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--border); flex-wrap:wrap; }
+.gestor-footer .btn-sec { flex:1; text-align:center; min-width:100px; }
 .btn-danger { border-color:rgba(224,112,112,.3); color:var(--danger); }
 .btn-danger:hover { background:rgba(224,112,112,.08); color:var(--danger); }
+/* Confirmación de borrado inline */
+.gestor-confirm  { display:flex; align-items:center; gap:6px; padding:6px 14px; background:rgba(224,112,112,.08); border-bottom:1px solid rgba(224,112,112,.15); font-size:.78rem; color:var(--danger); }
+.gestor-confirm button { padding:3px 10px; border-radius:8px; border:1px solid; cursor:pointer; font-size:.75rem; font-family:'DM Sans',sans-serif; }
+.gestor-confirm .conf-si  { background:rgba(224,112,112,.2); border-color:var(--danger); color:var(--danger); }
+.gestor-confirm .conf-no  { background:transparent; border-color:var(--border); color:var(--text-2); }
 
 /* ══════════════════════════════════════════════════════
    CAMBIAR CONTRASEÑA — pantalla
@@ -355,8 +367,8 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'D
   <div class="login-card">
     <div class="login-logo">
       <span class="logo-icon">🕊️</span>
-      <h1>Poemenizador</h1>
-      <p>Da Vinci — tu galería privada</p>
+      <h1>Mis Versos</h1>
+      <p>tu galería privada de poemas</p>
     </div>
     <div class="field">
       <label for="inp-usuario">Usuario</label>
@@ -396,6 +408,9 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'D
       <div class="gallery-title" id="gallery-title-text">Mis poemas</div>
       <div class="gallery-subtitle" id="gallery-subtitle">cargando…</div>
     </div>
+    <button class="btn-icon" title="Gestionar poemas" onclick="App.abrirGestor()" style="margin-right:2px;">
+      📋<span id="gestor-badge" class="hidden" style="position:absolute;top:2px;right:2px;width:8px;height:8px;background:var(--accent);border-radius:50%;"></span>
+    </button>
     <button class="btn-icon" onclick="App.abrirMenu()" title="Menú">
       <span id="gallery-user-initial">?</span>
     </button>
@@ -526,8 +541,11 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'D
 <div id="modal-gestor" onclick="App.cerrarGestor()">
   <div id="modal-gestor-inner" onclick="event.stopPropagation()">
     <div class="gestor-header">
-      <span class="gestor-titulo">📋 Gestionar poemas</span>
-      <button class="gestor-close" onclick="App.cerrarGestor()">✕</button>
+      <span class="gestor-titulo">📋 Mis poemas</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span id="gestor-contador" style="font-size:.72rem;color:var(--muted);font-style:italic;"></span>
+        <button class="gestor-close" onclick="App.cerrarGestor()">✕</button>
+      </div>
     </div>
     <div class="gestor-lista" id="gestor-lista"></div>
     <div class="gestor-footer">
@@ -1376,6 +1394,9 @@ const Gestor = {
   cargar(poemas) {
     this._original = poemas.map(p => ({...p}));
     this._poemas   = poemas.map(p => ({...p}));
+    this._confirmando = -1;
+    const cnt = el("gestor-contador");
+    if (cnt) cnt.textContent = `${poemas.length} poema${poemas.length!==1?"s":""}`;
     this._render();
   },
 
@@ -1383,22 +1404,55 @@ const Gestor = {
     return p.visible !== false && p.visible !== "false" && p.visible !== "0" && p.visible !== 0;
   },
 
+  _socialStats(p) {
+    // Obtiene stats del caché social si están disponibles
+    const cached = SocialCache.get(p.id);
+    if (!cached) return "";
+    const totalReacc = Object.values(cached.conteos||{}).reduce((a,b)=>a+b,0);
+    const totalComt  = (cached.comentarios||[]).length;
+    const parts = [];
+    if (totalReacc > 0) parts.push(`${totalReacc} ❤️`);
+    if (totalComt  > 0) parts.push(`${totalComt} 💬`);
+    return parts.join("  ");
+  },
+
   _render() {
     const lista = el("gestor-lista");
     lista.innerHTML = "";
     this._poemas.forEach((p, i) => {
       const visible = this._esVisible(p);
+      const stats   = this._socialStats(p);
+
+      // ── Fila principal ─────────────────────────────────────────
       const fila    = document.createElement("div");
       fila.className  = "gestor-fila";
       fila.innerHTML  = `
         <button class="gestor-btn-ord" onclick="Gestor._mover(${i},-1)" ${i===0?"disabled":""}>▲</button>
         <button class="gestor-btn-ord" onclick="Gestor._mover(${i}, 1)" ${i===this._poemas.length-1?"disabled":""}>▼</button>
-        <span class="gestor-fila-titulo" title="${_esc(p.titulo)}">${_esc(p.titulo)}</span>
-        <span class="gestor-fila-fecha">${formatearFecha(p.creado_en)}</span>
+        <div class="gestor-fila-info">
+          <span class="gestor-fila-titulo" title="${_esc(p.titulo)}">${_esc(p.titulo)}</span>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span class="gestor-fila-fecha">${formatearFecha(p.creado_en)}</span>
+            ${stats ? `<span class="gestor-fila-stats">${stats}</span>` : ""}
+          </div>
+        </div>
+        <button class="gestor-btn-view" title="Ver poema y comentarios" onclick="Gestor._verPoema(${i})">👁️</button>
         <button class="gestor-vis-btn${visible?"":" oculto"}" onclick="Gestor._toggleVis(${i})">
-          ${visible?"👁️ Visible":"🚫 Oculto"}
-        </button>`;
+          ${visible?"✔ Visible":"✖ Oculto"}
+        </button>
+        <button class="gestor-btn-del" title="Eliminar poema" onclick="Gestor._pedirConfirm(${i})">🗑️</button>`;
       lista.appendChild(fila);
+
+      // ── Fila de confirmación de borrado (oculta por defecto) ───
+      if (this._confirmando === i) {
+        const cfila = document.createElement("div");
+        cfila.className = "gestor-confirm";
+        cfila.innerHTML = `
+          <span>⚠️ ¿Eliminar "<strong>${_esc(p.titulo)}</strong>"? No se puede deshacer.</span>
+          <button class="conf-si" onclick="Gestor._eliminar(${i})">Eliminar</button>
+          <button class="conf-no" onclick="Gestor._cancelConfirm()">Cancelar</button>`;
+        lista.appendChild(cfila);
+      }
     });
   },
 
@@ -1406,12 +1460,67 @@ const Gestor = {
     const ni = idx + dir;
     if (ni < 0 || ni >= this._poemas.length) return;
     [this._poemas[idx], this._poemas[ni]] = [this._poemas[ni], this._poemas[idx]];
+    this._confirmando = -1;
     this._render();
   },
 
   _toggleVis(idx) {
     this._poemas[idx] = {...this._poemas[idx], visible: !this._esVisible(this._poemas[idx])};
+    this._confirmando = -1;
     this._render();
+  },
+
+  // ── Ver poema en el visor ──────────────────────────────────────────
+  _verPoema(idx) {
+    const p = this._poemas[idx];
+    App.cerrarGestor();
+    // Abre el visor para ese poema (usa la lista en App._poemas)
+    const original = App._poemas.find(o => o.id === p.id);
+    if (original) App.abrirPoema(original);
+    else toast("Poema no disponible, recarga la galería.");
+  },
+
+  // ── Confirmación de borrado ────────────────────────────────────────
+  _pedirConfirm(idx) {
+    this._confirmando = (this._confirmando === idx) ? -1 : idx;
+    this._render();
+    // Hacer scroll hasta la fila de confirmación
+    setTimeout(() => {
+      const lista = el("gestor-lista");
+      if (lista) lista.scrollTop = lista.scrollHeight;
+    }, 50);
+  },
+
+  _cancelConfirm() { this._confirmando = -1; this._render(); },
+
+  async _eliminar(idx) {
+    const p = this._poemas[idx];
+    const btn = document.querySelector(".conf-si");
+    if (btn) { btn.disabled = true; btn.textContent = "…"; }
+    try {
+      const res = await gasPost({
+        action:"pwa_eliminar_poema", id:p.id, pwa_token:State.token
+      }).catch(() => ({ok:false, error:"red"}));
+
+      if (res.ok) {
+        this._poemas.splice(idx, 1);
+        this._original = this._original.filter(o => o.id !== p.id);
+        // Actualizar también la lista en App
+        App._poemas = App._poemas.filter(o => o.id !== p.id);
+        this._confirmando = -1;
+        this._render();
+        const cnt = el("gestor-contador");
+        if (cnt) cnt.textContent = `${this._poemas.length} poema${this._poemas.length!==1?"s":""}`;
+        toast("🗑️ Poema eliminado.");
+        App.refrescar();
+      } else {
+        const msg = res.error === "red" ? "Error de conexión." :
+                    res.error?.includes("token") ? "No tienes permiso para eliminar poemas." :
+                    (res.error || "No se pudo eliminar.");
+        toast("⚠️ " + msg);
+        this._confirmando = -1; this._render();
+      }
+    } catch { toast("Error al eliminar."); this._confirmando = -1; this._render(); }
   },
 
   async guardar() {
@@ -1514,7 +1623,7 @@ function _formatFechaSocial(str) {
 
 function _inyectarManifest() {
   const manifest = {
-    name:"Poemenizador Da Vinci", short_name:"Poemenizador",
+    name:"Mis Versos", short_name:"Mis Versos",
     description:"Tu galería privada de poemas",
     start_url:"./", display:"standalone", orientation:"portrait",
     background_color:"#0d0b14", theme_color:"#0d0b14",
