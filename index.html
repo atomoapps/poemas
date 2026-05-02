@@ -120,7 +120,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'D
 .poem-card:hover  { border-color:rgba(212,165,116,.3); box-shadow:0 4px 24px rgba(0,0,0,.4); }
 @keyframes cardSlideIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 
-.poem-thumb { width:100%; aspect-ratio:3/2; object-fit:cover; display:block; background:var(--bg-2); }
+.poem-thumb { width:100%; aspect-ratio:3/2; object-fit:contain; display:block; background:#0d0b14; }
 .poem-thumb-placeholder { width:100%; aspect-ratio:3/2; display:flex; flex-direction:column; align-items:center; justify-content:center; background:linear-gradient(160deg,var(--surface-2) 0%,var(--bg-2) 100%); position:relative; overflow:hidden; }
 .poem-thumb-placeholder::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(-45deg,transparent,transparent 18px,rgba(200,185,230,.03) 18px,rgba(200,185,230,.03) 19px); }
 .placeholder-icon { font-size:2.2rem; opacity:.35; z-index:1; }
@@ -364,7 +364,13 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'D
     </div>
     <div class="field">
       <label for="inp-pwd">Contraseña</label>
-      <input id="inp-pwd" type="password" autocomplete="current-password" placeholder="••••••••">
+      <div style="position:relative;">
+        <input id="inp-pwd" type="password" autocomplete="current-password" placeholder="••••••••" style="padding-right:44px;">
+        <button type="button" onclick="togglePwd('inp-pwd','ojo-login')" title="Mostrar/ocultar contraseña"
+          style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text-2);padding:4px;line-height:1;">
+          <span id="ojo-login">👁️</span>
+        </button>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
       <input type="checkbox" id="chk-recordar" style="accent-color:var(--accent);width:15px;height:15px;">
@@ -1271,51 +1277,29 @@ const Social = {
   async reaccionar(emoji) {
     if (!State.token)  { toast("Inicia sesión para reaccionar."); return; }
     if (!this._poemId) return;
-
-    // ── UI OPTIMISTA: actualizar la pantalla ANTES de llamar al GAS ──────
     const conteosAntes = JSON.parse(JSON.stringify(this._conteos));
     const miEmojiAntes = this._miEmoji;
-
-    const esToggleOff = (this._miEmoji === emoji);
+    const esToggleOff  = (this._miEmoji === emoji);
     if (esToggleOff) {
-      // Quitar la reacción propia
       this._miEmoji = "";
-      if (this._conteos[emoji] > 1) this._conteos[emoji]--;
-      else delete this._conteos[emoji];
+      if (this._conteos[emoji] > 1) this._conteos[emoji]--; else delete this._conteos[emoji];
     } else {
-      // Quitar la anterior (si había) y poner la nueva
       if (this._miEmoji && this._conteos[this._miEmoji]) {
-        if (this._conteos[this._miEmoji] > 1) this._conteos[this._miEmoji]--;
-        else delete this._conteos[this._miEmoji];
+        if (this._conteos[this._miEmoji] > 1) this._conteos[this._miEmoji]--; else delete this._conteos[this._miEmoji];
       }
-      this._miEmoji = emoji;
-      this._conteos[emoji] = (this._conteos[emoji] || 0) + 1;
+      this._miEmoji = emoji; this._conteos[emoji] = (this._conteos[emoji] || 0) + 1;
     }
-    this._renderEmojis();  // ← aparece INMEDIATAMENTE en pantalla
-
-    // ── Confirmar con el GAS en segundo plano ────────────────────────────
+    this._renderEmojis();
     try {
       const res = await gasPost({ action:"pwa_reaccionar", poem_id:this._poemId, emoji, pwa_token:State.token });
       if (res.ok) {
-        // Sincronizar con la verdad del servidor
-        this._conteos = res.conteos || {};
-        this._miEmoji = res.mi_reaccion || "";
-        this._renderEmojis();
-        SocialCache.actualizarReacciones(this._poemId, this._conteos, this._miEmoji);
+        this._conteos = res.conteos || {}; this._miEmoji = res.mi_reaccion || "";
+        this._renderEmojis(); SocialCache.actualizarReacciones(this._poemId, this._conteos, this._miEmoji);
       } else {
-        // Revertir si el GAS rechazó la reacción
-        this._conteos = conteosAntes;
-        this._miEmoji = miEmojiAntes;
-        this._renderEmojis();
+        this._conteos = conteosAntes; this._miEmoji = miEmojiAntes; this._renderEmojis();
         toast("No se pudo guardar la reacción.");
       }
-    } catch {
-      // Revertir si hubo error de red
-      this._conteos = conteosAntes;
-      this._miEmoji = miEmojiAntes;
-      this._renderEmojis();
-      toast("Error al reaccionar.");
-    }
+    } catch { this._conteos = conteosAntes; this._miEmoji = miEmojiAntes; this._renderEmojis(); toast("Error al reaccionar."); }
   },
 
   async enviarComentario() {
@@ -1323,57 +1307,30 @@ const Social = {
     const inp   = el("inp-comentario");
     const texto = inp.value.trim();
     if (!texto) return;
-
-    // ── UI OPTIMISTA: mostrar el comentario ANTES de llamar al GAS ───────
-    inp.value    = "";
-    inp.disabled = true;
-
+    inp.value = ""; inp.disabled = true;
     const lista = el("lista-comentarios");
     const placeholder = lista.querySelector(".social-loading");
     if (placeholder) placeholder.remove();
-
-    // Crear el item visual provisional (opacidad reducida = "enviando")
     const item = document.createElement("div");
     item.className = "comentario-item";
     item.style.animation = "cardSlideIn .3s ease both";
-    item.style.opacity   = "0.6";  // indica que está en tránsito
-    const inicial = (State.nombre || "?").charAt(0).toUpperCase();
-    item.innerHTML = `
-      <div class="comentario-avatar">${inicial}</div>
-      <div class="comentario-burbuja">
-        <div class="comentario-nombre">${_esc(State.nombre || "Tú")}</div>
-        <div class="comentario-texto">${_esc(texto)}</div>
-        <div class="comentario-fecha">enviando…</div>
-      </div>`;
-    lista.appendChild(item);
-    lista.scrollTop = lista.scrollHeight;
-    show("social-badge");
-
+    item.style.opacity = "0.55";
+    const inicial = (State.nombre||"?").charAt(0).toUpperCase();
+    item.innerHTML = `<div class="comentario-avatar">${inicial}</div><div class="comentario-burbuja"><div class="comentario-nombre">${_esc(State.nombre||"Tú")}</div><div class="comentario-texto">${_esc(texto)}</div><div class="comentario-fecha">enviando…</div></div>`;
+    lista.appendChild(item); lista.scrollTop = lista.scrollHeight; show("social-badge");
     try {
       const res = await gasPost({ action:"pwa_comentar", poem_id:this._poemId, texto, pwa_token:State.token });
       if (res.ok) {
-        // Confirmar: poner opacidad normal y actualizar la fecha con datos reales
-        const c = res.comentario;
         item.style.opacity = "1";
         item.querySelector(".comentario-fecha").textContent = "ahora mismo";
-        SocialCache.agregarComentario(this._poemId, c);
+        SocialCache.agregarComentario(this._poemId, res.comentario);
       } else {
-        // Revertir: quitar el item provisional y devolver el texto al input
-        item.remove();
-        inp.value = texto;
-        const msg = res.error === "solo_el_destinatario_puede_comentar"
-          ? "Solo el destinatario puede comentar." : (res.error || "Error al comentar.");
+        item.remove(); inp.value = texto;
+        const msg = res.error==="solo_el_destinatario_puede_comentar" ? "Solo el destinatario puede comentar." : (res.error||"Error al comentar.");
         toast(msg);
       }
-    } catch {
-      // Revertir por error de red
-      item.remove();
-      inp.value = texto;
-      toast("Error de conexión.");
-    } finally {
-      inp.disabled = false;
-      inp.focus();
-    }
+    } catch { item.remove(); inp.value = texto; toast("Error de conexión."); }
+    finally  { inp.disabled = false; inp.focus(); }
   }
 };
 
