@@ -753,6 +753,21 @@ async function gasPost(payload, timeoutMs = 30000) {
   } finally { clearTimeout(tid); }
 }
 
+
+// ── Mostrar / ocultar contraseña ─────────────────────────────────────
+function togglePwd(inputId, iconId) {
+  const inp  = el(inputId);
+  const icon = el(iconId);
+  if (!inp || !icon) return;
+  if (inp.type === "password") {
+    inp.type = "text";
+    icon.textContent = "🙈";
+  } else {
+    inp.type = "password";
+    icon.textContent = "👁️";
+  }
+}
+
 function el(id) { return document.getElementById(id); }
 function show(id) { el(id).classList.remove("hidden"); }
 function hide(id) { el(id).classList.add("hidden"); }
@@ -960,13 +975,24 @@ const App = {
   renderThumb(p) {
     if (p.miniatura) {
       let src;
-      if (p.miniatura.startsWith("data:")) { src = p.miniatura; }
-      else {
-        const esSvg = p.miniatura.startsWith("PHN2") || p.miniatura.startsWith("Cjxz");
-        src = esSvg ? "data:image/svg+xml;base64," + p.miniatura
-                    : "data:image/jpeg;base64,"    + p.miniatura;
+      if (p.miniatura.startsWith("data:")) {
+        // Ya lleva el prefijo completo
+        src = p.miniatura;
+      } else {
+        // Detectar tipo por los primeros bytes del base64:
+        // PNG  → base64 empieza con "iVBOR"
+        // JPEG → "/9j/" o "base64,/9j"
+        // SVG  → "PHN2" (="<sv") o "Cjxz" (newline+"<s")
+        // WebP → "UklGR"
+        const h = p.miniatura.substring(0, 8);
+        let mime;
+        if      (h.startsWith("PHN2") || h.startsWith("Cjxz")) mime = "image/svg+xml";
+        else if (h.startsWith("iVBOR"))                          mime = "image/png";
+        else if (h.startsWith("UklGR"))                          mime = "image/webp";
+        else                                                     mime = "image/jpeg";
+        src = `data:${mime};base64,` + p.miniatura;
       }
-      return `<img class="poem-thumb" src="${src}" alt="${_esc(p.titulo)}" onerror="this.parentElement.replaceChild(_placeholderThumb(),this)">`;
+      return `<img class="poem-thumb" src="${src}" alt="${_esc(p.titulo)}" loading="lazy" onerror="this.parentElement.replaceChild(_placeholderThumb(),this)">`;
     }
     return _placeholderThumbHTML();
   },
@@ -1393,19 +1419,31 @@ const Gestor = {
     btn.disabled = true; btn.textContent = "Guardando…";
     let hayErrores = false;
     try {
-      // 1. ── Visibilidades (prioridad — funciona con pwa_token en GAS v6.1) ──
+      // 1. ── Visibilidades: pwa_token (GAS v6.1) con fallback a admin token ──
       const cambiosVis = [];
       for (const p of this._poemas) {
         const orig    = this._original.find(o => o.id === p.id);
         const visOrig = orig ? this._esVisible(orig) : true;
         const visNuev = this._esVisible(p);
         if (visOrig !== visNuev) {
-          cambiosVis.push(
-            gasPost({ action:"pwa_toggle_visible", id:p.id,
-                      visible:visNuev, pwa_token:State.token })
-            .then(res => { if (!res.ok) hayErrores = true; })
-            .catch(() => { hayErrores = true; })
-          );
+          const intento = gasPost({
+            action:"pwa_toggle_visible", id:p.id,
+            visible:visNuev, pwa_token:State.token
+          }).then(async res => {
+            if (res.ok) return true;
+            // GAS v6.0 requiere token admin — intentar si está disponible
+            if (State.adminToken) {
+              const r2 = await gasPost({
+                action:"pwa_toggle_visible", id:p.id,
+                visible:visNuev, token:State.adminToken
+              }).catch(() => ({ ok:false }));
+              if (r2.ok) return true;
+            }
+            console.warn("toggle_visible falló:", res.error, "id:", p.id);
+            hayErrores = true;
+            return false;
+          }).catch(() => { hayErrores = true; return false; });
+          cambiosVis.push(intento);
         }
       }
       await Promise.all(cambiosVis);
