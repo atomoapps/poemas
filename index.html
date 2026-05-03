@@ -261,6 +261,21 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'D
 .comentario-nombre   { font-size:.72rem; font-weight:500; color:var(--accent); margin-bottom:2px; }
 .comentario-texto    { font-size:.82rem; color:var(--text); line-height:1.4; word-break:break-word; }
 .comentario-fecha    { font-size:.65rem; color:var(--muted); margin-top:2px; font-style:italic; }
+.comentario-reply-btn { background:none; border:none; cursor:pointer; color:var(--muted); font-size:.68rem; padding:2px 6px; border-radius:6px; transition:all .15s; margin-top:3px; display:block; }
+.comentario-reply-btn:hover { color:var(--accent); background:rgba(212,165,116,.08); }
+/* Box de respuesta inline del creador */
+.reply-box { margin:4px 0 6px 36px; display:flex; gap:6px; align-items:flex-start; animation:cardSlideIn .25s ease both; }
+.reply-box textarea { flex:1; background:var(--bg-2); border:1px solid rgba(212,165,116,.3); border-radius:10px; padding:7px 10px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:.82rem; resize:none; outline:none; min-height:52px; transition:border-color .2s; }
+.reply-box textarea:focus { border-color:rgba(212,165,116,.6); box-shadow:0 0 0 2px rgba(212,165,116,.1); }
+.reply-box-btns { display:flex; flex-direction:column; gap:4px; }
+.reply-send { background:var(--accent); border:none; border-radius:8px; color:#1a1010; font-size:.78rem; font-weight:500; cursor:pointer; padding:6px 10px; transition:all .15s; }
+.reply-send:hover { filter:brightness(1.12); }
+.reply-cancel { background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--muted); font-size:.72rem; cursor:pointer; padding:5px 8px; transition:all .15s; }
+.reply-cancel:hover { color:var(--text); background:rgba(255,255,255,.04); }
+/* Comentario del creador — resalte especial */
+.comentario-item.es-creador .comentario-avatar { background:linear-gradient(135deg,#856404,#d4a574); }
+.comentario-item.es-creador .comentario-nombre { color:var(--accent); }
+.comentario-item.es-creador .comentario-burbuja { border-color:rgba(212,165,116,.25); background:rgba(212,165,116,.06); }
 .social-loading      { text-align:center; font-size:.78rem; color:var(--muted); font-style:italic; padding:12px; font-family:'Cormorant Garamond',serif; }
 .social-spinner-sm   { width:14px; height:14px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; display:inline-block; vertical-align:middle; margin-right:6px; }
 
@@ -566,9 +581,9 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'D
 <script>
 "use strict";
 
-// ── CONFIGURACIÓN — cambia esta URL por la de tu GAS ──────────────
-const GAS_URL    = "https://script.google.com/macros/s/AKfycbwUlR--ITGCEsbS2DfWUGC5u1xOKtWE6T02i3s2nXFK4XwnFxXsOBrtvP67SDFRfrkO/exec";
-const ADMIN_TOKEN = "dv_2026_miTokenSecreto_547uP$5070F";   // ← Inyectado automáticamente desde Poemenizador Da Vinci
+const GAS_URL     = "https://script.google.com/macros/s/AKfycbzNa-SNe3PzqNwCR4U-PyWpYP7k4a4YSwSN4lgALXEByMJ0NKpy5HU3SiXbPwNLZ6Rq/exec";
+const ADMIN_TOKEN  = "dv_2026_miTokenSecreto_547uP$5070F";   // ← Inyectado automáticamente desde Poemenizador Da Vinci
+const CREATOR_NAME = "";   // ← Nombre del creador del poema (para responder comentarios)
 
 // ══════════════════════════════════════════════════════════════════
 //  TEMAS (Fase 5) — 5 paletas de color
@@ -1309,20 +1324,68 @@ const Social = {
       return;
     }
     lista.innerHTML = "";
+    const esCreador = typeof CREATOR_NAME !== "undefined" && CREATOR_NAME &&
+                      typeof ADMIN_TOKEN  !== "undefined" && ADMIN_TOKEN;
     comentarios.forEach(c => {
+      const esteEsCreador = (c.nombre === CREATOR_NAME);
       const item = document.createElement("div");
-      item.className = "comentario-item";
+      item.className = "comentario-item" + (esteEsCreador ? " es-creador" : "");
       const inicial = (c.nombre||"?").charAt(0).toUpperCase();
       item.innerHTML = `
         <div class="comentario-avatar">${inicial}</div>
         <div class="comentario-burbuja">
-          <div class="comentario-nombre">${_esc(c.nombre)}</div>
+          <div class="comentario-nombre">${_esc(c.nombre)}${esteEsCreador ? ' ✍️' : ''}</div>
           <div class="comentario-texto">${_esc(c.texto)}</div>
           <div class="comentario-fecha">${_formatFechaSocial(c.creado_en)}</div>
+          ${esCreador && !esteEsCreador ? `<button class="comentario-reply-btn" onclick="Social._mostrarReply(this,'${_esc(c.nombre)}')">↩ Responder</button>` : ''}
         </div>`;
       lista.appendChild(item);
     });
     lista.scrollTop = lista.scrollHeight;
+  },
+
+  _mostrarReply(btn, nombreDestinatario) {
+    const prevBox = el("lista-comentarios").querySelector(".reply-box");
+    if (prevBox) { prevBox.remove(); }
+    if (btn._replyActivo) { btn._replyActivo = false; btn.textContent = "↩ Responder"; return; }
+    btn._replyActivo = true; btn.textContent = "✕ Cerrar";
+    const box = document.createElement("div");
+    box.className = "reply-box";
+    box.innerHTML = `<textarea id="reply-textarea" placeholder="Respondiendo a ${_esc(nombreDestinatario)}…" rows="2" maxlength="500"></textarea><div class="reply-box-btns"><button class="reply-send" onclick="Social._enviarRespuesta()">Enviar ✍️</button><button class="reply-cancel" onclick="Social._cerrarReply()">Cancelar</button></div>`;
+    btn.closest(".comentario-item").after(box);
+    box.querySelector("textarea").focus();
+  },
+
+  _cerrarReply() {
+    const box = el("lista-comentarios").querySelector(".reply-box");
+    if (box) box.remove();
+    el("lista-comentarios").querySelectorAll(".comentario-reply-btn").forEach(b => {
+      b._replyActivo = false; b.textContent = "↩ Responder";
+    });
+  },
+
+  async _enviarRespuesta() {
+    const ta = el("reply-textarea");
+    if (!ta) return;
+    const texto = ta.value.trim();
+    if (!texto) { ta.focus(); return; }
+    ta.disabled = true;
+    try {
+      const res = await gasPost({ action:"pwa_comentar", poem_id:this._poemId, texto, token:ADMIN_TOKEN, nombre_remitente:CREATOR_NAME });
+      if (res.ok) {
+        this._cerrarReply();
+        const lista = el("lista-comentarios");
+        const item  = document.createElement("div");
+        item.className = "comentario-item es-creador";
+        item.innerHTML = `<div class="comentario-avatar">${(CREATOR_NAME||"?").charAt(0).toUpperCase()}</div><div class="comentario-burbuja"><div class="comentario-nombre">${_esc(CREATOR_NAME)} ✍️</div><div class="comentario-texto">${_esc(texto)}</div><div class="comentario-fecha">ahora mismo</div></div>`;
+        lista.appendChild(item); lista.scrollTop = lista.scrollHeight;
+        SocialCache.agregarComentario(this._poemId, res.comentario);
+        toast("✍️ Respuesta enviada.");
+      } else {
+        ta.disabled = false; ta.focus();
+        toast("⚠️ " + (res.error?.includes("token") ? "Token admin no válido." : (res.error||"Error al responder.")));
+      }
+    } catch { ta.disabled = false; ta.focus(); toast("Error de conexión."); }
   },
 
   async reaccionar(emoji) {
