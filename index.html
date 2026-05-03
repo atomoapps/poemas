@@ -567,7 +567,8 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'D
 "use strict";
 
 // ── CONFIGURACIÓN — cambia esta URL por la de tu GAS ──────────────
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwUlR--ITGCEsbS2DfWUGC5u1xOKtWE6T02i3s2nXFK4XwnFxXsOBrtvP67SDFRfrkO/exec";
+const GAS_URL    = "https://script.google.com/macros/s/AKfycbwUlR--ITGCEsbS2DfWUGC5u1xOKtWE6T02i3s2nXFK4XwnFxXsOBrtvP67SDFRfrkO/exec";
+const ADMIN_TOKEN = "";   // ← Inyectado automáticamente desde Poemenizador Da Vinci
 
 // ══════════════════════════════════════════════════════════════════
 //  TEMAS (Fase 5) — 5 paletas de color
@@ -1498,14 +1499,18 @@ const Gestor = {
     const btn = document.querySelector(".conf-si");
     if (btn) { btn.disabled = true; btn.textContent = "…"; }
     try {
-      const res = await gasPost({
-        action:"pwa_eliminar_poema", id:p.id, pwa_token:State.token
-      }).catch(() => ({ok:false, error:"red"}));
+      // Usar admin token si está disponible (necesario para eliminar)
+      const payload = { action:"pwa_eliminar_poema", id:p.id };
+      if (typeof ADMIN_TOKEN !== "undefined" && ADMIN_TOKEN)
+        payload.token = ADMIN_TOKEN;
+      else
+        payload.pwa_token = State.token;  // intentar con pwa_token (puede fallar si GAS no lo acepta)
+
+      const res = await gasPost(payload).catch(() => ({ok:false, error:"red"}));
 
       if (res.ok) {
         this._poemas.splice(idx, 1);
         this._original = this._original.filter(o => o.id !== p.id);
-        // Actualizar también la lista en App
         App._poemas = App._poemas.filter(o => o.id !== p.id);
         this._confirmando = -1;
         this._render();
@@ -1515,7 +1520,8 @@ const Gestor = {
         App.refrescar();
       } else {
         const msg = res.error === "red" ? "Error de conexión." :
-                    res.error?.includes("token") ? "No tienes permiso para eliminar poemas." :
+                    (res.error?.includes("token") || res.error?.includes("acceso"))
+                    ? "Sin permiso. Necesitas inyectar el ADMIN_TOKEN en el index.html." :
                     (res.error || "No se pudo eliminar.");
         toast("⚠️ " + msg);
         this._confirmando = -1; this._render();
